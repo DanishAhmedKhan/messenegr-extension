@@ -3,7 +3,8 @@
     "name": "Messenger extension",
     "version": "0.1",
     "permissions": [
-        "storage"
+        "storage",
+        "tabs"
     ],
     "browser_action": {
         "default_popup": "popup.html",
@@ -20,7 +21,11 @@
             "matches": [
                 "<all_urls>"
             ],
-            "js": ["jquery.js", "content.js"]
+            "js": ["jquery.js", "arrive.js", "content.js"]
         }
-    ]
+    ],
+    "background": {
+        "scripts": ["jquery.js", "background.js"],
+        "persistent": false
+    }
 }
