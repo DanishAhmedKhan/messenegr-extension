@@ -1,11 +1,6 @@
 console.log('Hello from popup!');
 
-
-// TODO for tomorrow
-// create a custom select box using div
-// create an error box
-
-const backendUrl = 'http://192.168.0.104:4400';
+const backendUrl = 'http://192.168.0.102:4400';
 const colors = ['#fa697c', '#10316b', '#94aa2a', '#fc7fb2', '#888888', '#c71c56', '#a25016', '	#6a3577',
                 '#005b96 ', '#451e3e', '#f37736', '#ffa700', '#03dac6', '#F50057', '#6A1B9A', '#006064',
                 '#009688', '#9CCC65', '#827717', '#C0CA33', '#76FF03', '#F57F17', '#FFA726', '#FF5722',
@@ -62,57 +57,79 @@ $('.go_to_login').click(() => {
 let tags = [];
 let friendList = [];
 let lastTagOpened = '';
+let templates = [];
 let messages = [];
 
+function generateKey(str) {
+    return str.replace(/ /g, '-');
+}
+
+let storageKeys = ['tags', 'friendList', 'lastTagOpened', 'templates', 'messages'];
 
 // Initialize popup. Get tags and friendList from storage
-chrome.storage.sync.get(['tags', 'friendList', 'lastTagOpened', 'messages'], function(result) {
+chrome.storage.sync.get(storageKeys, function(result) {
     if (result.tags != null)
         tags = result.tags;
     if (result.friendList != null)
         friendList = result.friendList;
     if (result.lastTagOpened != null)
         lastTagOpened = result.lastTagOpened;
-    if (result.messages != null)
-        messages = result.messages;
+    if (result.templates != null)
+        templates = result.templates;
+    // if (result.messages != null)
+    //     messages = result.messages;
 
+    let k = [];
+    for (let i = 0; i < templates.length; i++) {
+        k.push(generateKey(templates[i]));
+    }
+    chrome.storage.sync.get(k, function(r) {
+        for (let i = 0; i < templates.length; i++) {
+            let key = generateKey(templates[i]);
+            if (r[key] != null) {
+                messages[key] = r[key];
+            }
+        }
+    });
+    
     // Add all saved tags to the popup
     addTags();
-    if (lastTagOpened != null || lastTagOpened != '')
+    if (lastTagOpened != null && lastTagOpened != '')
         setTagFriendList(lastTagOpened);
-    setMessages();
+    setTemplates();
 });
 
 function addTags() {
     $tagBox = $('.tag_box');
     tagHtml = '';
     for (let i = 0; i < tags.length; i++) {
-        tagHtml += `<div class="tag_item" style="background:${tags[i].color}">
-                        <div class="tag_value" style="inline-block;">${tags[i].name}</div>
-                        <div class="tag_remove" style="display:inline-block;margin-left:10px;">x</div>
-                    </div>`;
+        tagHtml += `
+            <div class="tag_item" style="background:${tags[i].color}">
+                <div class="tag_value" style="inline-block;">${tags[i].name}</div>
+                <div class="tag_remove" style="display:inline-block;margin-left:10px;">x</div>
+            </div>`;
     }
     $tagBox.append(tagHtml);
 }
 
-function setMessages() {
-    for (let i = 0; i < messages.length; i++) {
-        $('.messages').append(
-            `<div class="message" style="display:flex;justify-content:space-between;">
-                <div class="message_value">${messages[i]}</div>
-                <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
-                    <img class="logo send_message" src="./images/send.png">
-                    <img class="logo delete_message" src="./images/delete.png">
+function setTemplates() {
+    console.log(templates);
+    for (let i = 0; i < templates.length; i++) {
+        $('.templates').append(
+            `<div class="template" style="display:flex;justify-content:space-between;">
+                <div class="template_value" style="cursor:pointer;">${templates[i]}</div>
+                <div class="each_template_action" style="margin-right:10px;cursor:pointer;">
+                    <img class="logo delete_template" src="./images/delete.png">
                 </div>
             </div>`
         );
     }
 
-    $('.save_message').css({
+    $('.save_template').css({
         'pointer-events': 'none',
         'background': 'rgb(3, 166, 133, .5)'
     });
-    $('.cancel_message').css({
+    $('.cancel_template').css({
         'pointer-events': 'none',
         'background': 'rgb(3, 166, 133, .5)'
     });
@@ -372,11 +389,11 @@ $('.tag_box').on('click', '.tag_value', function(e) {
             chrome.storage.sync.set({ lastTagOpened: tag });
 
             $('.note_box').css('display', 'none');
-            $('.message_box').css('display', 'block');
+            $('.template_box').css('display', 'block');
 
             setTagFriendList(tag);
 
-            $('.add_note').css({
+            $('.add_template').css({
                 'pointer-events': 'auto',
                 'background': 'rgb(3, 166, 133)'
             });
@@ -391,12 +408,15 @@ function setTagFriendList(tag) {
     let friendHtml = '';
     
     let count = 0;
+    console.log(friendList);
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].tag == tag) {
             friends.push(friendList[i]);
             friendHtml +=   
                 `<div class="tag_friend_item" style="display:flex;">
-                    <div class="friend_image" style="width:55px;height:55px;background:grey;"></div>
+                    <div class="friend_image" style="width:55px;height:55px;background:grey;border-radius:50%;overflow:hidden;">
+                        <img style="width:100%;height:100%;" src="${friendList[i].imageUrl}">
+                    </div>
                     <div class="friend_detail" style="margin-left:16px;">
                         <div class="friend_name" style="margin-top:2px;margin-bottom:8px;">${friendList[i].name}</div>
                         <div class="friend_action" style="display:flex;">
@@ -432,6 +452,9 @@ $('.tag_friend_box').on('click', '.friend_chat', function(e) {
 
     let friendName = $(this).parent().prev().text();
 
+    $('.tag_friend_item').removeClass('friend_active');
+    $(this).parent().parent().parent().addClass('friend_active');
+
     // Send message to content.js to disable the extension
     chrome.tabs.getAllInWindow(null, function(tabs) {
         for (let i = 0; i < tabs.length; i++) {
@@ -449,13 +472,19 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
+    $('.nav_template').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.nav_message').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.nav_note').removeClass('nav_item_unselected').addClass('nav_item_selected');
+    $('.template_box').css('display', 'none');
     $('.message_box').css('display', 'none');
     $('.note_box').css('display', 'block');
+    $('.nav_template').css('cursor', 'pointer');
     $('.nav_message').css('cursor', 'pointer');
 
     let friendName = $(this).parent().prev().text();
+
+    $('.tag_friend_item').removeClass('friend_active');
+    $(this).parent().parent().parent().addClass('friend_active');
 
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].name == friendName) {
@@ -615,19 +644,34 @@ $('.message_box').on('click', '.delete_message', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
+    let template = $('.messages').find('.template_name').text();
+    let key = generateKey(template);
+
     let message = $(this).parent().prev().text();
     $(this).parent().parent().remove();
-    for (let i = 0; i < messages.length; i++) {
-        if (messages[i] == message) {
-            messages.splice(i, 1);
+    for (let i = 0; i < messages[key].length; i++) {
+        if (messages[key][i] == message) {
+            messages[key].splice(i, 1);
             break;
         }
     }
 
-    chrome.storage.sync.set({ messages });
+    let storageObj = {};
+    storageObj[key] = messages[key];
+    chrome.storage.sync.set(storageObj);
 });
 
-$('.nav_message').on('click', function(e) {
+$('.nav_template').on('click', function(e) {
+    console.log('nav_template clicked');
+    $('.nav_template').removeClass('nav_item_unselected').addClass('nav_item_selected');
+    $('.nav_note').removeClass('nav_item_selected').addClass('nav_item_unselected');
+    $('.template_box').css('display', 'block');
+    $('.note_box').css('display', 'none');
+    $('.nav_template').css('cursor', 'auto');
+});
+
+$('.nav_message_menu').on('click', function(e) {
+    console.log('nav_messsage clicked');
     $('.nav_message').removeClass('nav_item_unselected').addClass('nav_item_selected');
     $('.nav_note').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.message_box').css('display', 'block');
@@ -641,7 +685,7 @@ $('.message_box').on('click', '.add_message', function(e) {
     e.stopImmediatePropagation();
 
     //$notes = $(this).parent().prev();
-    $('.messages').append(`<textarea class="message_textarea" rows="1"></textarea>`);
+    $('.messages').append(`<textarea class="message_textarea" placeholder="New message" rows="1"></textarea>`);
     $('.message_textarea').focus();
     $('.messages').scrollTop($('.messages').height());
     $(this).css({
@@ -665,17 +709,26 @@ $('.message_box').on('click', '.save_message', function(e) {
 
     let message = $('.message_textarea').val();
     $('.message_textarea').remove();
-    $('.messages').append(`<div class="message" style="display:flex;justify-content:space-between;">
-                            <div class="message_value">${message}</div>
-                            <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
-                                <img class="logo send" src="./images/send.png">
-                                <img class="logo" src="./images/delete.png">
-                            </div>
-                        </div>`);
+    $('.messages').append(
+        `<div class="message" style="display:flex;justify-content:space-between;">
+            <div class="message_value">${message}</div>
+            <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
+                <img class="logo send_message" src="./images/send.png">
+                <img class="logo delete_message" src="./images/delete.png">
+            </div>
+        </div>`
+    );
 
-    messages.push(message);
-
-    chrome.storage.sync.set({ messages });
+    let template = $('.messages').find('.template_name').text();
+    console.log('template', templates);
+    let key = generateKey(template)
+    if (messages[key] == null) messages[key] = [];
+    messages[key].push(message);
+    console.log(messages);
+    let storageObj = {};
+    storageObj[key] = messages[key];
+    console.log(storageObj);
+    chrome.storage.sync.set(storageObj);
 
     $('.add_message').css({
         'pointer-events': 'auto',
@@ -690,20 +743,34 @@ $('.message_box').on('click', '.save_message', function(e) {
         'background': 'rgb(3, 166, 133, .5)'
     });
 
-    $.ajax({
-        type: 'POST',
-        url: backendUrl + '/api/user/addMessage',
-        data: { message },
-        beforeSend: function(request) {
-            request.setRequestHeader("x-user-auth-token", userAuthToken);
-        },
-        success: function(data, textStatus, request) {
-            
-        },
-        error: function (request, textStatus, errorThrown) {
-            console.log('Error adding message to friend');
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'newMessage', template, message });
+                break;
+            }                        
         }
-    })
+    });
+
+    // $.ajax({
+    //     type: 'POST',
+    //     url: backendUrl + '/api/user/addMessage',
+    //     data: {
+    //         template, 
+    //         message,
+    //     },
+    //     beforeSend: function(request) {
+    //         request.setRequestHeader("x-user-auth-token", userAuthToken);
+    //     },
+    //     success: function(data, textStatus, request) {
+    //         console.log(data.data);    
+    //     },
+    //     error: function (request, textStatus, errorThrown) {
+    //         console.log('Error adding message to friend');
+    //     }
+    // })
 });
 
 $('.message_box').on('click', '.cancel_message', function(e) {
@@ -724,8 +791,185 @@ $('.message_box').on('click', '.cancel_message', function(e) {
     });
 });
 
+$('.go_to_template').on('click', function(e) {
+    console.log('back to template');
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 
+    if ($('.nav_message').hasClass('nav_item_selected')) {
+        $('.nav_template').removeClass('nav_item_unselected').addClass('nav_item_selected');
+        $('.nav_message').css('display', 'none');
+        $('.message_box').css('display', 'none');
+        $('.messages').html('');
+        $('.nav_template').css('display', 'block');
+        $('.template_box').css('display', 'block');
+    }
+}); 
 
+$('.template_box').on('click', '.template_value', function(e) {
+    console.log('template value clicked');
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let template = $(this).text();
+
+    
+    $('.nav_template').css('display', 'none');
+    $('.template_box').css('display', 'none');
+    $('.nav_message').css('display', 'flex');
+    $('.message_box').css('display', 'block');
+    $('.nav_message').removeClass('nav_item_unselected').addClass('nav_item_selected');
+
+    let templateMessage = messages[generateKey(template)] || [];
+    console.log(templateMessage);
+
+    $('.messages').append(`<div class="template_name" style="display:none;">${template}</div>`);
+
+    let templateMessageHtml = '';
+    for (let i = 0; i < templateMessage.length; i++) {
+        templateMessageHtml += 
+        `<div class="message" style="display:flex;justify-content:space-between;">
+            <div class="message_value">${templateMessage[i]}</div>
+            <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
+                <img class="logo send_message" src="./images/send.png">
+                <img class="logo delete_message" src="./images/delete.png">
+            </div>
+        </div>`;
+    }
+
+    $('.messages').append(templateMessageHtml);
+
+    $('.save_message').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+    $('.cancel_message').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+});
+
+$('.template_box').on('click', '.add_template', function(e) {
+    console.log('add template');
+
+    $('.templates').append(`<textarea class="template_textarea" placeholder="New template" rows="1"></textarea>`);
+    $('.template_textarea').focus();
+    $('.templates').scrollTop($('.templates').height());
+    $(this).css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+    $('.save_template').css({
+        'pointer-events': 'auto',
+        'background': 'rgb(3, 166, 133)'
+    });
+    $('.cancel_template').css({
+        'pointer-events': 'auto',
+        'background': 'rgb(3, 166, 133)'
+    });
+});
+
+$('.template_box').on('click', '.save_template', function(e) {
+    console.log('save template');
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let template = $('.template_textarea').val();
+    for (let i = 0; i < templates.length; i++) {
+        if (templates[i] == template) {
+            console.log('Template with this name already present.');
+            return;
+        }
+    }
+
+    $('.template_textarea').remove();
+    $('.templates').append(
+        `<div class="template" style="display:flex;justify-content:space-between;">
+            <div class="template_value" style="cursor:pointer;">${template}</div>
+            <div class="each_template_action" style="margin-right:10px;cursor:pointer;">
+                <img class="logo delete_template" src="./images/delete.png">
+            </div>
+        </div>`
+    );
+
+    templates.push(template);
+
+    chrome.storage.sync.set({ templates });
+
+    $('.add_template').css({
+        'pointer-events': 'auto',
+        'background': 'rgb(3, 166, 133)'
+    });
+    $('.save_template').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+    $('.cancel_template').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'newTemplate', template });
+                break;
+            }                        
+        }
+    });
+
+    // $.ajax({
+    //     type: 'POST',
+    //     url: backendUrl + '/api/user/addTemplate',
+    //     data: { template },
+    //     beforeSend: function(request) {
+    //         request.setRequestHeader("x-user-auth-token", userAuthToken);
+    //     },
+    //     success: function(data, textStatus, request) {
+    //         console.log(data.data);
+    //     },
+    //     error: function (request, textStatus, errorThrown) {
+    //         console.log('Error adding template to friend');
+    //     }
+    // })
+});
+
+$('.template_box').on('click', '.cancel_template', function(e) {
+    console.log('cancel template');
+
+    $('.templates').find('textarea').remove();
+    $('.add_template').css({
+        'pointer-events': 'auto',
+        'background': 'rgb(3, 166, 133)'
+    });
+    $('.save_template').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+    $('.cancel_template').css({
+        'pointer-events': 'none',
+        'background': 'rgb(3, 166, 133, .5)'
+    });
+});
+
+$('.template_box').on('click', '.delete_template', function(e) {
+    console.log('delete template');
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let template = $(this).parent().prev().text();
+    $(this).parent().parent().remove();
+    for (let i = 0; i < templates.length; i++) {
+        if (templates[i] == template) {
+            templates.splice(i, 1);
+            break;
+        }
+    }
+
+    chrome.storage.sync.set({ templates });
+});
 
 $('body').on('input', 'textarea', function() {
     console.log('input...');

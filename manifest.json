@@ -3,6 +3,8 @@
     "name": "Messenger extension",
     "short_name": "MessEx",
     "version": "0.1",
+    "author": "Danish Ahmed Khan",
+    "description": "Pepper is a Facebook Messenger CRM extension",
     "permissions": [
         "storage",
         "tabs"
@@ -38,5 +40,8 @@
             "background.js"
         ],
         "persistent": false
-    }
+    },
+    "web_accessible_resources": [
+        "images/send.png"
+    ]
 }

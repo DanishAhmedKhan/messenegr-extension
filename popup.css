@@ -188,17 +188,21 @@ body {
 /* friend box*/
 .tag_friend_box {
     width: 50%;
-    padding-right: 10px;
+    margin-right: 20px;
     /* background:blue; */
     height: 300px;
-    overflow-y: auto;
+    overflow-y: hidden;
+}
+
+.tag_friend_box:hover {
+    overflow: auto;
 }
 
 .tag_friend_item {
     margin: 10px 6px;
     margin-left: 0;
     padding: 6px;
-    padding-left: 0;
+    padding-left: 6px;
 }
 
 
@@ -223,12 +227,13 @@ body {
     padding-left: 10px;
     padding-bottom: 6px;
     padding-top: 4px;
-    width: 100px;
+    width: 120px;
     font-size: 14px;
+    display: flex;
 }
 
 .nav_item_selected {
-    background: #f4f4f4;
+    background: #f2f2f2;
     font-weight: bold;
 }
 
@@ -241,14 +246,85 @@ body {
     /* text-decoration: underline; */
 }
 
+.go_to_template {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.nav_message {
+    display: none;
+}
 
 
 
+
+.friend_active {
+    background: #f2f2f2;
+}
+
+
+
+
+/* template box */
+.template_box {
+    width: 100%;
+    height: 280px;
+    overflow: auto;
+    position: relative;
+}
+
+.templates {
+    height: calc(100% - 40px);
+    overflow-y: auto;
+    background: #f2f2f2;
+    padding-left: 10px;
+}
+
+.template_action {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    display: flex;
+}
+
+.add_template {
+    width: 60px;
+}
+
+.save_template {
+    margin-left: 16px;
+    width: 60px;
+}
+
+.cancel_template {
+    width: 60px;
+    margin-left: 16px;
+}
+
+.template_value {
+    cursor: pointer,
+}
+
+.template_textarea {
+    padding: 4px;
+    width: calc(100% - 10px);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow-y: hidden;
+}
+
+.template {
+    margin-top: 10px;
+    font-size: 15px;
+}
 
 
 
 /* message box */
 .message_box {
+    display: none;
     width: 100%;
     height: 280px;
     overflow-y: auto;
@@ -258,7 +334,7 @@ body {
 .messages {
     height: calc(100% - 40px);
     overflow-y: auto;
-    background: #f4f4f4;
+    background: #f2f2f2;
     padding-left: 10px;
 }
 
@@ -271,14 +347,7 @@ body {
 }
 
 .add_message {
-    cursor: pointer;
-    color: white;
-    background: rgb(3, 166, 133);
-    padding: 6px 6px;
-    padding-bottom: 4px;
     width: 60px;
-    text-align: center;
-    font-size: 14px;
 }
 
 .save_message {
@@ -318,7 +387,7 @@ body {
 .notes {
     height: calc(100% - 40px);
     overflow-y: auto;
-    background: #f4f4f4;
+    background: #f2f2f2;
     padding-left: 10px;
 }
 
