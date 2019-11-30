@@ -108,9 +108,17 @@ chrome.runtime.onMessage.addListener(
                 console.log('newTemplate');
                 newTemplate(message.template);
             break;
+            case 'deleteTemplate':
+                console.log('delete template');
+                deleteTemplate(message.template);
+            break;
             case 'newMessage':
                 console.log('newMessage');
                 newMessage(message.template, message.message);
+            break;
+            case 'deleteMessage':
+                console.log('deleteMessage');
+                deleteMessage(message.template, message.message);
             break;
         }
     }
@@ -132,6 +140,43 @@ function generateStyleCss(css) {
         cssStr += key + ':' + css[key] + ';'
     }
     return cssStr;
+}
+
+function deleteTemplate(template) {
+    for (let i = 0; i < templates.length; i++) {
+        if (templates[i] == template) {
+            templates.splice(i, 1);
+            break;
+        }
+    }
+
+    let $children = $('.templates').children();
+    $children.each(function() {
+        if ($(this).find('.template_value').text().trim() == template) {
+            $(this).remove();
+            return false;
+        }
+    });
+}
+
+function deleteMessage(template, message) {
+    let key = generateKey(template);
+    for (let i = 0; i < messages[key].length; i++) {
+        if (messages[key][i] == message) {
+            messages[key].splice(i, 1);
+            break;
+        }
+    }
+
+    if (section == 'message' && $('.template_name').text().trim() == template) {
+        $children = $('.messages').children();
+        $children.each(function() {
+            if ($(this).find('.message_value').text().trim() == message) {
+                $(this).remove();
+                return false;
+            }
+        });
+    }
 }
 
 function isUserAuthTokenDefined() {
@@ -192,7 +237,7 @@ function setSideMessageBox() {
 
     section = 'template';
     const sideMessageBox = `
-    <div class="side_message_section" style="${sideMessageSectionStyle}">
+    <div class="side_message_section" style="${sideMessageSectionStyle}" disabled>
         <div class="side_message_button" style="${sideMessageButtonStyle}">
         </div>
         <div class="side_message_box" style="${sideMessageBoxStyle}">
@@ -270,6 +315,15 @@ function setSideMessageBox() {
             console.log(message);
 
             sendMessage(message);
+            // chrome.tabs.getAllInWindow(null, function(tabs) {
+            //     for (let i = 0; i < tabs.length; i++) {
+            //         // Find messenger tab
+            //         if (tabs[i].title == 'Messenger') {
+            //             chrome.tabs.sendMessage(tabs[i].id, { action: 'sendMessage', message });
+            //             break;
+            //         }                        
+            //     }
+            // });
         });
 
         $('.back_to_template').on('click', function(e) {
@@ -304,29 +358,6 @@ function newMessage(template, message) {
 function generateKey(str) {
     return str.replace(/ /g, '-');
 }
-
-// $('.template_value').on('click',  function(e) {
-//     console.log('template value clicked!!');
-//     e.stopPropagation();
-//     e.stopImmediatePropagation();
-
-//     $('.side_message_box').html('');
-
-//     let template = $(this).text();
-//     let key = generateKey(template);
-
-//     let messageHtml = '';
-//     for (let i = 0; i < messages[key].length; i++) {
-//         messageHtml += `
-//         <div class="message" style="margin-top:10px;display:flex;">
-//             <div class="message_value">
-//                 ${messages[key][i]}
-//             </div>
-//         </div>`;
-//     }
-
-//     $('.side_message_box').html(messageHtml);
-// });
 
 
 let optionStyle = `color:white;padding:4px;`;
@@ -494,36 +525,50 @@ function selectFriend(friendName) {
 
 function sendMessage(templateMessage) {
     console.log('bigatron');
+    console.log(templateMessage);
+    let c = 0;
     selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
     if ($(selector).length > 0) {
+        $('.__i_').mclick();
+        $('#js_1').mclick();
+        console.log(c++);
         var evt = new Event('input', { bubbles: true });
-        var input = document.querySelector(selector);
+        let input = document.querySelector(selector);
+        console.log(evt);
+        console.log(input);
         input.innerHTML = templateMessage;
+        console.log(c++);
         input.dispatchEvent(evt);
+        console.log(c++);
         $(selector).after('<span data-text="true">'+templateMessage+'</span>');
+        console.log(c++);
         var loc = window.location.href;
         loc = loc.split("/t/");
-        //$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-        $next = $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a');
-        $prev = $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").prev('li').find('a');
+        $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1]+"']").next('li').find('a');
+        $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1]+"']").prev('li').find('a');
         let flag = true;
         if ($next.length > 0) {
             $next.mclick();
+            console.log(c++);
             flag = true;
         } else {
             $prev.mclick();
-            flasg = false;
+            console.log(c++);
+            flag = false;
         }
         setTimeout(function() {
+            console.log(c++);
             var loc1 = window.location.href;
             loc1 = loc1.split("/t/");
-            $next = $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").next('li').find('a');
-            $prev = $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a');
+            console.log(loc1);
+            $next = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").next('li').find('a');
+            $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
             if (flag) $prev.mclick();
             else $next.mclick();
-            setTimeout(function() {
-                $('._38lh').mclick();
-            }, 100);
+            // setTimeout(function() {
+            //     console.log(c++);
+            //     $('._38lh').mclick();
+            // }, 100);
         }, 100);
     } else {
         console.log('Message already typed in the message box');
@@ -743,6 +788,54 @@ function sendMessage4(templateMessage){
         }
 
     }
+}
+
+function sendMessage5(templateMessage) {
+    selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
+			if($(selector).length > 0){
+                $('.js_1').mclick();
+				var evt = new Event('input', {
+							bubbles: true  
+						});
+				var input = document.querySelector(selector);
+				input.innerHTML = templateMessage;
+				input.dispatchEvent(evt);
+				$(selector).after('<span data-text="true">'+templateMessage+'</span>');
+				var loc = window.location.href;
+				loc = loc.split("/t/");
+				$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
+				setTimeout(function(){
+					var loc1 = window.location.href;
+					loc1 = loc1.split("/t/");
+					$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
+					setTimeout(function(){
+						$('div[aria-label="New message"]').find('a[role="button"]').mclick();
+						/*******************/
+						var loc = window.location.href;
+						loc = loc.split("/t/");
+						$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
+						setTimeout(function(){
+							var loc1 = window.location.href;
+							loc1 = loc1.split("/t/");
+							$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
+						},200);
+						/*******************/
+					},200);
+				},200);
+			} else {
+				$('div[aria-label="New message"] div[contenteditable="true"] span span').text(templateMessage);
+				$('div[aria-label="New message"]').find('a[role="button"]').mclick();
+				/*******************/
+				var loc = window.location.href;
+				loc = loc.split("/t/");
+				$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
+				setTimeout(function(){
+					var loc1 = window.location.href;
+					loc1 = loc1.split("/t/");
+					$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
+				},200);
+				/*******************/
+			}
 }
 
 function simulateKeyPress(character) {

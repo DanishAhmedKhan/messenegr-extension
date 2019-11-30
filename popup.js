@@ -659,6 +659,17 @@ $('.message_box').on('click', '.delete_message', function(e) {
     let storageObj = {};
     storageObj[key] = messages[key];
     chrome.storage.sync.set(storageObj);
+
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteMessage', template, message });
+                break;
+            }               
+        }
+    });
 });
 
 $('.nav_template').on('click', function(e) {
@@ -969,6 +980,17 @@ $('.template_box').on('click', '.delete_template', function(e) {
     }
 
     chrome.storage.sync.set({ templates });
+
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteTemplate', template });
+                break;
+            }               
+        }
+    });
 });
 
 $('body').on('input', 'textarea', function() {
