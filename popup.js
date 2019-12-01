@@ -118,7 +118,7 @@ function setTemplates() {
         $('.templates').append(
             `<div class="template" style="display:flex;justify-content:space-between;">
                 <div class="template_value" style="cursor:pointer;">${templates[i]}</div>
-                <div class="each_template_action" style="margin-right:10px;cursor:pointer;">
+                <div class="each_template_action" style="margin-right:16px;cursor:pointer;">
                     <img class="logo delete_template" src="./images/delete.png">
                 </div>
             </div>`
@@ -723,7 +723,7 @@ $('.message_box').on('click', '.save_message', function(e) {
     $('.messages').append(
         `<div class="message" style="display:flex;justify-content:space-between;">
             <div class="message_value">${message}</div>
-            <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
+            <div class="each_message_action" style="margin-right:16px;cursor:pointer;">
                 <img class="logo send_message" src="./images/send.png">
                 <img class="logo delete_message" src="./images/delete.png">
             </div>
@@ -841,7 +841,7 @@ $('.template_box').on('click', '.template_value', function(e) {
         templateMessageHtml += 
         `<div class="message" style="display:flex;justify-content:space-between;">
             <div class="message_value">${templateMessage[i]}</div>
-            <div class="each_message_action" style="margin-right:10px;cursor:pointer;">
+            <div class="each_message_action" style="margin-right:16px;cursor:pointer;">
                 <img class="logo send_message" src="./images/send.png">
                 <img class="logo delete_message" src="./images/delete.png">
             </div>
@@ -897,7 +897,7 @@ $('.template_box').on('click', '.save_template', function(e) {
     $('.templates').append(
         `<div class="template" style="display:flex;justify-content:space-between;">
             <div class="template_value" style="cursor:pointer;">${template}</div>
-            <div class="each_template_action" style="margin-right:10px;cursor:pointer;">
+            <div class="each_template_action" style="margin-right:16px;cursor:pointer;">
                 <img class="logo delete_template" src="./images/delete.png">
             </div>
         </div>`

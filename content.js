@@ -126,7 +126,7 @@ chrome.runtime.onMessage.addListener(
 
 function newTemplate(template) {
     $('.templates').append(`
-        <div class="template" style="margin-top:10px;">
+        <div class="template">
             <div class="template_value" style="cursor:pointer;">
                 ${template}
             </div>
@@ -208,7 +208,7 @@ function setSideMessageBox() {
     $('body').css('overflow', 'hidden');
     let sideMessageSectionStyle = generateStyleCss({
         'z-index': '9999',
-        width: '250px',
+        width: '280px',
         height: '320px',
         overflow: 'hidden',
         display: 'block',
@@ -221,28 +221,108 @@ function setSideMessageBox() {
         right: '0',
         top: '25vh',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
+        'z-index': '9999'
     });
     let sideMessageBoxStyle = generateStyleCss({
-        width: '250px',
+        width: '300px',
         height: '320px',
         background: 'white',
         position: 'absolute',
-        right: '-282px',
+        right: '-332px',
         top: 'calc(25vh + 55px)',
         transition: 'all .25s',
         padding: '16px',
         'font-size': '16px',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
+        'z-index': '9999',
+    });
+
+    let templatesStyle = generateStyleCss({
+        width: '100%',
+        height: 'calc(100% - 40px)',
+        display: 'block',
+        'overflow-y': 'auto',
+    });
+
+    let messagesStyle = generateStyleCss({
+        width: '100%',
+        height: 'calc(100% - 40px)',
+        display: 'block',
+        'overflow-y': 'auto',
     });
 
     section = 'template';
     const sideMessageBox = `
+    <style>
+        .templates::-webkit-scrollbar,
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        } 
+        .templates::-webkit-scrollbar-track,
+        .messages::-webkit-scrollbar-track {
+            background: white; /*#f1f1f1*/ 
+            /* -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); */
+            border-radius: 10px;
+        }  
+        .templates::-webkit-scrollbar-thumb,
+        .messages::-webkit-scrollbar-thumb {
+            background: #8888884D; 
+            -webkit-box-shadow: inset 0 0 6p rgba(0,0,0,0.3); 
+            border-radius: 10px;
+        }
+        .templates::-webkit-scrollbar-thumb:hover,
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #55555573; 
+        }
+
+        .template {
+            margin-bottom: 12px;
+            background: rgb(173,216,230,.7);
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .template:last-child {
+            margin-bottom: 0;
+        }
+        .message {
+            display: flex;
+            background: rgb(173,216,230,.7);
+            border-radius: 4px;
+            margin-bottom:12px;
+            justify-content: space-between;
+            margin-right: 10px;
+            
+        }
+        .message:last-child {
+            margin-bottom: 0;
+        }
+
+        .templates {
+            width: 100%;
+            height: calc(100% - 40px);
+            display: block;
+            overflow-y: hidden;
+        }
+        .templates:hover {
+            overflow-y: overlay;
+        }
+        .messages {
+            width: 100%;
+            height: calc(100% - 40px);
+            display: block;
+            overflow-y: hidden;
+        }
+        .messages:hover {
+            overflow-y: overlay;
+        }
+    </style>
     <div class="side_message_section" style="${sideMessageSectionStyle}" disabled>
         <div class="side_message_button" style="${sideMessageButtonStyle}">
         </div>
         <div class="side_message_box" style="${sideMessageBoxStyle}">
-            <div class="templates" style="width:100%;display:block;"></div>
-            <div class="messages" style="width:100%;display:none;"></div>
+            <div class="heading_name" style="margin-bottom:16px;"></div>
+            <div class="templates"></div>
+            <div class="messages"></div>
         </div>
     </div>`;
 
@@ -256,23 +336,25 @@ function setSideMessageBox() {
             sideMessageBoxOpen = true;
         } else {
             $('.side_message_box').css({
-                right: '-282px'
+                right: '-332px'
             });
             sideMessageBoxOpen = false;
         }
     }); 
 
-    templateHtml = '<div style="font-weight:bold;">Templates</div>';
+    $('.heading_name').html(`<div style="font-weight:bold;">Templates</div>`);
+    let templateHtml = '';
     for (let i = 0; i < templates.length; i++) {
         templateHtml += `
-        <div class="template" style="margin-top:10px;">
-            <div class="template_value" style="cursor:pointer;">
+        <div class="template">
+            <div class="template_value" style="cursor:pointer;padding:5px 8px 5px 8px;font-size:15px;">
                 ${templates[i]}
             </div>
         </div>`;
     }
 
-    $('.templates').html(templateHtml);
+    $('.templates').append(templateHtml);
+
     $('.template_value').on('click', function(e) {
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -281,20 +363,22 @@ function setSideMessageBox() {
         let template = $(this).text().trim();
         let key = generateKey(template);
 
-        let messageHtml = `
-        <div style="display:flex;">
-            <div class="back_to_template" style="margin-right:16px;">B</div>
-            <div style="font-weight:bold;">Message (${template})</div>
-        </div>`;
+        $('.heading_name').html(`
+            <div style="display:flex;">
+                <div class="back_to_template" style="margin-right:12px;">B</div>
+                <div style="font-weight:bold;">${template}</div>
+            </div>`);
+        let messageHtml = '';
         messageHtml += `<div class="template_name" style="display:none;">${template}</div>`;
         if (messages[key] == null) messages[key] = [];
         for (let i = 0; i < messages[key].length; i++) {
             messageHtml += `
-            <div class="message" style="margin-top:10px;display:flex;justify-content:space-between;">
-                <div class="message_value">
+            <div class="message">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;">
                     ${messages[key][i]}
                 </div>
-                <div class="message_action" style="width:20px;height:20px;margin-right:6px;">
+                <div class="message_action" 
+                style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
                     <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
                         style="width:100%;height:100%;cursor:pointer;">
                 </div>
@@ -315,18 +399,10 @@ function setSideMessageBox() {
             console.log(message);
 
             sendMessage(message);
-            // chrome.tabs.getAllInWindow(null, function(tabs) {
-            //     for (let i = 0; i < tabs.length; i++) {
-            //         // Find messenger tab
-            //         if (tabs[i].title == 'Messenger') {
-            //             chrome.tabs.sendMessage(tabs[i].id, { action: 'sendMessage', message });
-            //             break;
-            //         }                        
-            //     }
-            // });
         });
 
         $('.back_to_template').on('click', function(e) {
+            $('.heading_name').html(`<div style="font-weight:bold;margin-bottom:12px;">Templates</div>`);
             $('.messages').css('display', 'none');
             $('.templates').css('display', 'block');
             section = 'template';
@@ -342,11 +418,12 @@ function newMessage(template, message) {
     if (section == 'message' && $('.template_name').text().trim() == template) {
         console.log('in the section');
         $('.messages').append(`
-            <div class="message" style="margin-top:10px;display:flex;justify-content:space-between;">
+            <div class="message">
                 <div class="message_value">
                     ${message}
                 </div>
-                <div class="message_action" style="width:20px;height:20px;margin-right:6px;">
+                <div class="message_action"  
+                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
                     <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
                         style="width:100%;height:100%;cursor:pointer;">
                 </div>
