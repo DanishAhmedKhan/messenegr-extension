@@ -396,3 +396,30 @@ $('.message_textarea').keypress(function(e){
         $('.save_message').click();
     }
 });
+
+$('.emoji_button').on('click', function(e) {
+    let emojiContainer = $('.emoji_box_container');
+    if (emojiContainer.css('display') == 'none') {
+        emojiContainer.css('display', 'block');
+    } else {
+        emojiContainer.css('display', 'none');
+    }
+});
+
+$('th').on('click', function(e) {
+    let emoji = $(this).text().trim();
+    let messageTextarea = $('.message_textarea');
+    messageTextarea.val(messageTextarea.val() + emoji);
+
+    messageTextarea.css('height', '29px');
+});
+
+// $('body').click(function(e) {
+//     if (!(e.target.id == "emoji_box" || $(e.target).parents("#emoji_box").length)) {
+//         let emojiContainer = $('.emoji_box_container');
+//         if (emojiContainer.css('display') == 'block') {
+//             emojiContainer.css('display', 'none');
+//         }
+//         console.log('outside');
+//     }
+// });

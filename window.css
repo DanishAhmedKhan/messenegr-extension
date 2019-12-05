@@ -290,6 +290,51 @@ image {
     width: 55px;
 }
 
+.emoji_button {
+    margin-bottom: 16px;
+    margin-right: 16px;
+    margin-left: 16px;
+    font-size: 15px;
+    width: 55px;
+    position:relative;
+}
+
+.emoji_box_container {
+    display: none;
+    filter: drop-shadow(0px 0px 7px rgba(0,0,0,0.4));
+}
+
+.emoji_box_polygon {
+    position: absolute;
+    left: -190px;
+    top: -383px;
+    width: 280px;
+    height: 360px;
+    background: white;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 90%, 75% 90%, 75% 100%, 65% 90%, 0% 90%);
+    /* box-shadow: rgba(59, 59, 59, 0.41) 0px 3px 10px; */
+}
+
+.emoji_box {
+    height: 90%;
+    background: white;
+    overflow-y: hidden;
+}
+
+.emoji_box:hover {
+    overflow-y: overlay;
+}
+
+table {
+    font-size: 24px;
+}
+
+th {
+    width: 44px;
+    height: 44px;
+    background: white;
+}
+
 .messages:hover {
     overflow-y: overlay;
 }

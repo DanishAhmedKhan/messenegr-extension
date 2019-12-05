@@ -54,7 +54,6 @@ chrome.storage.sync.get(['userAuthToken', 'friendList', 'tags', 'templates'], fu
                 let key = generateKey(templates[i]);
                 messages[key] = r[key];
             }
-            console.log(messages);
         });
     }
 });
@@ -277,7 +276,6 @@ function start() {
     $chatList = $chatBox.find('li._5l-3 ._1qt5:not("._6zkd")');
 
     currentFriendSelected = $('li._1ht2').find('._7st9').text().trim();
-    console.log(currentFriendSelected);
 
     $chatBox.arrive('li._5l-3', function() {
         let item = $(this).find('._1qt5:not("._6zkd")');
@@ -298,12 +296,9 @@ function start() {
 
 function setFriendListClickListener() {
     $c = $('li._5l-3._1ht1._6zk9');
-    console.log($c);
     $c.on('click', function(e) {
-        console.log('friend list item clicked!!');
         e.preventDefault();
         currentFriendSelected = $(this).find('._7st9').text();
-        console.log(currentFriendSelected);
         let firstName = currentFriendSelected.substring(0,
                         currentFriendSelected.indexOf(' '));
 
@@ -795,6 +790,10 @@ function sendMessage(templateMessage) {
     let c = 0;
     selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
     if ($(selector).length > 0) {
+        console.log($(selector));
+        
+        let t = $('div[aria-label="New message"] div[contenteditable="true"] ._1mf._1mj');
+
         $('.__i_').mclick();
         $('#js_1').mclick();
         //console.log(c++);
@@ -806,7 +805,29 @@ function sendMessage(templateMessage) {
         //console.log(c++);
         input.dispatchEvent(evt);
         //console.log(c++);
-        $(selector).after('<span data-text="true">'+templateMessage+'</span>');
+        //console.log($(selector));
+        $(selector).after('<span data-text="true">' + templateMessage + '</span>');
+        
+
+        
+        let kk = t.attr('data-offset-key');
+        let ind = kk.indexOf('-') + 1;
+        kk = kk.substring(0, ind) + 1 + kk.substring(ind + 1);
+        console.log(kk);
+        console.log(t);
+        t.append(`
+            <span class="_21wj" data-offset-key="${kk}" 
+            style="background-image: url('https://static.xx.fbcdn.net/images/emoji.php/v9/t88/1/32/1f600.png');">
+                <span class="_7464">
+                    <span data-offset-key="${kk}">
+                        <span data-text="true">😀</span>
+                    </span>
+                </span>
+            </span>
+        `);
+        console.log(t.html());
+
+
         //console.log(c++);
         var loc = window.location.href;
         loc = loc.split("/t/");
@@ -831,6 +852,8 @@ function sendMessage(templateMessage) {
             $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
             if (flag) $prev.mclick();
             else $next.mclick();
+
+            
             // setTimeout(function() {
             //     console.log(c++);
             //     $('._38lh').mclick();

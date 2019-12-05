@@ -488,17 +488,17 @@ $('.tag_box').on('click', '.tag_value', function(e) {
         if (result.lastTagOpened != tag) {
             chrome.storage.sync.set({ lastTagOpened: tag });
 
-            $('.note_box').css('display', 'none');
-            if ($('.template_box').css('display') == 'none')
-                $('.message_box').css('display', 'block');
-            else $('.template_box').css('display', 'block');
+            // $('.note_box').css('display', 'none');
+            // if ($('.template_box').css('display') == 'none')
+            //     $('.message_box').css('display', 'block');
+            // else $('.template_box').css('display', 'block');
 
             setTagFriendList(tag);
 
-            $('.add_template').css({
-                'pointer-events': 'auto',
-                'background': 'rgb(3, 166, 133)'
-            });
+            // $('.add_template').css({
+            //     'pointer-events': 'auto',
+            //     'background': 'rgb(3, 166, 133)'
+            // });
         }
     });
 });
@@ -514,7 +514,7 @@ function setTagFriendList(tag) {
         if (friendList[i].tag == tag) {
             friends.push(friendList[i]);
             friendHtml +=   
-                `<div class="tag_friend_item" style="display:flex;">
+                `<div class="tag_friend_item" style="display:flex;padding-left: 6px;">
                     <div class="friend_image" style="width:55px;height:55px;background:grey;border-radius:50%;overflow:hidden;">
                         <img style="width:100%;height:100%;" src="${friendList[i].imageUrl}">
                     </div>

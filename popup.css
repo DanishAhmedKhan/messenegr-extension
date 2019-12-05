@@ -262,9 +262,10 @@ body {
     font-weight: normal;
 }
 
-.nav_message:hover {
-    /* text-decoration: underline; */
+.nav_note {
+    width: 65px;
 }
+
 
 .go_to_template {
     display: inline-block;
@@ -422,7 +423,7 @@ body {
 
 /* note box */
 .note_box {
-    display: none;
+    /* display: none; */
     width: 100%;
     position: relative;
     height: 280px;
@@ -459,16 +460,22 @@ body {
     width: 60px;
     text-align: center;
     font-size: 14px;
+    pointer-events: none;
+    background: rgb(3, 166, 133, .5);
 }
 
 .save_note {
     margin-left: 16px;
     width: 60px;
+    pointer-events: none;
+    background: rgb(3, 166, 133, .5);
 }
 
 .cancel_note {
     margin-left: 16px;
     width: 60px;
+    pointer-events: none;
+    background: rgb(3, 166, 133, .5);
 }
 
 .note {
