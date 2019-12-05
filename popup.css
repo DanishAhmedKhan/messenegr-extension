@@ -96,14 +96,23 @@ body {
 
 
 /* main */
-.logout_box {
-    display: inline-block;
+.main_action {
     position: absolute;
     top: 25px;
     right: 45px;
     font-size: 12px;
+    display: flex;
+}
+
+.logout_box {
     color: rgb(81, 108, 208);
     cursor: pointer;
+}
+
+.chat_box {
+    color: rgb(81, 108, 208);
+    cursor: pointer;
+    margin-right: 16px;
 }
 
 .tag_form {
@@ -117,19 +126,24 @@ body {
     margin-bottom: 10px;
 }
 
+.tag_button {
+    cursor: pointer;
+}
+
 .tag_box {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     width: 90%;
-    height: 100px;
+    height: 120px;
     margin: 0 auto;
     overflow: auto;
     overflow-x: hidden;
 }
 
 .tag_item {
-    display: inline-flex;
+    display: inline-block;
+    /* height: 50px; */
     margin-left: 12px;
     margin-right: 12px;
     margin-top: 8px;
@@ -253,9 +267,9 @@ body {
 }
 
 .go_to_template {
-    width: 16px;
-    height: 16px;
     display: inline-block;
+    margin-right: 8px;
+    cursor: pointer;
 }
 
 .nav_message {
@@ -328,8 +342,15 @@ body {
 .template {
     margin-top: 10px;
     font-size: 15px;
+    background: rgb(0,0,0,.1);
+    margin-right: 10px;
+    padding: 6px 8px 6px 8px;
+    border-radius: 4px;
 }
 
+.template:last-child {
+    margin-bottom: 10px;
+}
 
 
 /* message box */
@@ -388,9 +409,15 @@ body {
 .message {
     margin-top: 10px;
     font-size: 15px;
+    background: rgb(0,0,0,.1);
+    margin-right: 10px;
+    padding: 6px 8px 6px 8px;
+    border-radius: 4px;
 }
 
-
+.message:last-child {
+    margin-bottom: 10px;
+}
 
 
 /* note box */

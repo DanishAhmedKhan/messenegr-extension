@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="popup.css">
+    <link rel="stylesheet" href="colorPicker.css">
 </head>
 <body style="width:750px;height:550px;">
 
@@ -15,9 +17,9 @@
             <div class="label">Email</div>
             <input id="email_signup" class="long_input" type="text" name="email" placeholder="email" autocomplete="off"></br>
             <div class="label">Password</div>
-            <input id="password_signup" class="long_input" type="passowrd" name="password" placeholder="password" autocomplete="off"></br>
+            <input id="password_signup" class="long_input" type="password" name="password" placeholder="password" autocomplete="off"></br>
             <div class="label">Confirm password</div>
-            <input id="confirm_password_signup" class="long_input" type="passowrd" name="confirmPassword" placeholder="password" autocomplete="off"></br>
+            <input id="confirm_password_signup" class="long_input" type="password" name="confirmPassword" placeholder="password" autocomplete="off"></br>
             <input class="primary-button signup_button" type="submit" value="Signup"> 
         </form>
         <div class="go_to go_to_login">Login to your account</div>
@@ -36,13 +38,17 @@
     </div>
 
     <div class="main_content" style="display:none">
-        <div class="logout_box">Logout</div>
+        <div class="main_action">
+            <div class="chat_box">Messages</div>
+            <div class="logout_box">Logout</div>
+        </div>
+        
         <div class="tag_form">
-            <div class="primary-text tag_text">Add a new tag</div>
+            <!-- <div class="primary-text tag_text">Add a new tag</div> -->
             <form id="add_tag_form" action="">
-            <input id="tag_input" class="tag_input" type="text" placeholder="tag" autocomplete="off">
-            <input class="primary-button tag_button" type="submit" value="Add tag">
-        </form>
+                <input id="tag_input" class="tag_input" type="text" placeholder="Add a new tag" autocomplete="off">
+                <input class="primary-button tag_button" type="submit" value="Add tag">
+            </form>
         </div>
         <div class="tag_box"></div>
         <div class="tag_action">
@@ -51,7 +57,9 @@
                 <div class="nav">
                     <div class="nav_item nav_item_selected nav_template">Templates</div>
                     <div class="nav_item nav_item_selected nav_message">
-                        <div class="go_to_template">B</div>
+                        <div class="go_to_template">
+                            <i class="fa fa-arrow-left" style="font-size:16px;"></i>
+                        </div>
                         <div class="nav_message_menu">Message</div>
                     </div>
                     <div class="nav_item nav_item_unselected nav_note">Notes</div>
@@ -86,7 +94,8 @@
         </div>
     </div>
     
-    <script src="jquery.js"></script>    
+    <script src="jquery.js"></script>   
+    <script type="text/javascript" src="colorPicker.js"></script> 
     <script src="popup.js"></script>
 </body>
 </html>

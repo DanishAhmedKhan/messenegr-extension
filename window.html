@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="window.css">
+</head>
+<body>
+
+    <div class="overlay">
+        <div class="overlay_view">
+            <div class="overlay_heading"></div>
+            <div class="overlay_text"></div>
+            <div class="overlay_action"></div>
+        </div>
+    </div>
+    
+    <div class="wrapper">
+
+        <section class="nav">
+            <div class="nav_header">
+                <div class="nav_header_user">
+                    <div class="nav_header_user_image">
+                        <img class="image circular_image" src="https://scontent.fccu3-1.fna.fbcdn.net/v/t1.0-1/c7.0.40.40a/p40x40/1467248_188144328054637_2050554146_n.jpg?_nc_cat=106&_nc_ohc=p_lx1K4h5jIAQk1FdVU0Q5z3saQdaMrG3UnYo0MRRUWkyscsO7JsJmSgw&_nc_ht=scontent.fccu3-1.fna&oh=37e38589180ac5e6aefe4305e501a1e2&oe=5E77E171" alt="">
+                    </div>
+                    <div class="nav_header_user_detail">
+                        <div class="nav_header_user_name">Danish Ahmed Khan</div>
+                    </div>
+                </div>
+            </div>
+            <div class="horizontal_line"></div>
+            <div class="nav_menu">
+                <div class="nav_menu_list">
+                    <div class="nav_menu_item">Tags</div>
+                    <div class="nav_menu_item">Templates</div>
+                    <div class="nav_menu_item">Setting</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="add_template">
+                <div class="add_template_text">Add a new message template</div>
+                <div class="add_template_form">
+                    <input type="text" class="input add_template_input" placeholder="New template">
+                    <div class="primary_button add_template_button">Add Template</div>
+                </div>
+            </div>
+            <div class="list">
+                <div class="templates"></div>
+                <div class="message_box">
+                    <div class="messages"></div>
+                    <div class="message_textarea_box">
+                        <textarea class="message_textarea" placeholder="New message" rows="1"></textarea>
+                        <div class="secondary_button save_message">Save</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="jquery.js"></script>    
+    <script src="window.js"></script>
+
+</body>
+</html>

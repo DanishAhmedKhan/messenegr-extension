@@ -18,13 +18,13 @@ jQuery.fn.extend({
 
 var conversionListText = "Conversation List";
 
-var fb_ul_selector = 'ul[aria-label="' + conversionListText + '"]';
-var fb_ul_li_selector = "ul[aria-label='" + conversionListText + "'] li";
-var fb_list_selectors = 'ul[aria-label="' + conversionListText + '"] li:not([fb_user_id]';
+var fb_ul_selector = 'ul[aria-label="' + conversionListText + '" i]';
+var fb_ul_li_selector = "ul[aria-label='" + conversionListText + "' i] li";
+var fb_list_selectors = 'ul[aria-label="' + conversionListText + '" i] li:not([fb_user_id]';
 
 
-
-const backendUrl = 'http://192.168.0.102:4400';
+const backendUrl = 'http://localhost:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
 
 let userAuthToken;
 let friendsCount = 0;
@@ -32,6 +32,7 @@ let friendList = [];
 let tags = [];
 let templates = [];
 let messages = [];
+let currentFriendSelected = '';
 
 // Load user auth token and friendList
 chrome.storage.sync.get(['userAuthToken', 'friendList', 'tags', 'templates'], function(result) {
@@ -93,6 +94,16 @@ chrome.runtime.onMessage.addListener(
                 userAuthToken = message.userAuthToken;
                 friendList = message.friendList;
                 tags = message.tags;
+                templates = message.templates;
+                messages = message.mess;
+                //console.log(message);
+                //console.log(templates);
+                //console.log(messages);
+                //console.log(message.storageKey);
+                for (key in message.storageKey) {
+                    messages[key] = message.storageKey[key];
+                }
+                console.log(messages);
                 
                 start();
             break;
@@ -120,18 +131,96 @@ chrome.runtime.onMessage.addListener(
                 console.log('deleteMessage');
                 deleteMessage(message.template, message.message);
             break;
+            case 'editTag':
+                console.log('editTag');
+                editTag(message.tag, message.oldTag);
+            break;
         }
     }
 );
 
+function editTag(tag, oldTag) {
+    $selectOption = $chatBox.find(`li._5l-3 ._1qt5:not("._6zkd") select option[value='${oldTag}']`);
+    $selectOption.attr('value', tag);
+    $selectOption.text(tag);
+
+    // Update friendList with new tag
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].tag == oldTag) {
+            friendList[i].tag = tag;
+        }
+    }
+
+    chrome.storage.sync.set({ friendList });
+    chrome.runtime.sendMessage({ type: 'changeTag', oldTag: oldTag, newTag: tag, userAuthToken });
+}
+
 function newTemplate(template) {
+    templates.push(template);
+
     $('.templates').append(`
         <div class="template">
-            <div class="template_value" style="cursor:pointer;">
+            <div class="template_value" style="cursor:pointer;padding:5px 8px 5px 8px;font-size:15px;">
                 ${template}
             </div>
         </div>`
     );
+
+    $('.template_value').on('click', function(e) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        section = 'message';
+        let template = $(this).text().trim();
+        let key = generateKey(template);
+
+        $('.heading_name').html(`
+            <div style="display:flex;">
+                <div class="back_to_template" style="margin-right:12px;cursor:pointer;">
+                    <i class="fa fa-arrow-left" style="font-size:16px;"></i>
+                </div>
+                <div style="font-weight:bold;">${template}</div>
+            </div>`);
+        let messageHtml = '';
+        messageHtml += `<div class="template_name" style="display:none;">${template}</div>`;
+        if (messages[key] == null) messages[key] = [];
+        for (let i = 0; i < messages[key].length; i++) {
+            messageHtml += `
+            <div class="message">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
+                    ${messages[key][i]}
+                </div>
+                <div class="message_action" 
+                style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                    <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
+                        style="width:100%;height:100%;cursor:pointer;">
+                </div>
+            </div>`;
+        }
+
+
+        $('.messages').html(messageHtml);
+        $('.templates').css('display', 'none');
+        $('.messages').css('display', 'block');
+
+        $('.send_message').on('click', function(e) {
+            console.log('send_message');
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            let message = $(this).parent().prev().text().trim();
+            console.log(message);
+
+            sendMessage(message);
+        });
+
+        $('.back_to_template').on('click', function(e) {
+            $('.heading_name').html(`<div style="font-weight:bold;margin-bottom:12px;">Templates</div>`);
+            $('.messages').css('display', 'none');
+            $('.templates').css('display', 'block');
+            section = 'template';
+        });
+    });
 }
 
 function generateStyleCss(css) {
@@ -184,8 +273,11 @@ function isUserAuthTokenDefined() {
 }
 
 function start() {
-    $chatBox = $('[aria-label="Conversation List"]');
+    $chatBox = $('[aria-label="Conversation List" i]');
     $chatList = $chatBox.find('li._5l-3 ._1qt5:not("._6zkd")');
+
+    currentFriendSelected = $('li._1ht2').find('._7st9').text().trim();
+    console.log(currentFriendSelected);
 
     $chatBox.arrive('li._5l-3', function() {
         let item = $(this).find('._1qt5:not("._6zkd")');
@@ -197,9 +289,25 @@ function start() {
         $chatList.each(function() {
             addSelectToFriend($(this));
         });
-    }
 
-    setSideMessageBox();
+        setSideMessageBox();
+
+        setFriendListClickListener();
+    }
+}
+
+function setFriendListClickListener() {
+    $c = $('li._5l-3._1ht1._6zk9');
+    console.log($c);
+    $c.on('click', function(e) {
+        console.log('friend list item clicked!!');
+        e.preventDefault();
+        currentFriendSelected = $(this).find('._7st9').text();
+        console.log(currentFriendSelected);
+        let firstName = currentFriendSelected.substring(0,
+                        currentFriendSelected.indexOf(' '));
+
+    });
 }
 
 let sideMessageBoxOpen = false;
@@ -214,22 +322,22 @@ function setSideMessageBox() {
         display: 'block',
     });
     let sideMessageButtonStyle = generateStyleCss({
-        width: '55px',
-        height: '55px',
+        width: '45px',
+        height: '45px',
         background: 'white',
         position: 'absolute',
         right: '0',
-        top: '25vh',
+        top: '15vh',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
         'z-index': '9999'
     });
     let sideMessageBoxStyle = generateStyleCss({
         width: '300px',
-        height: '320px',
+        height: '460px',
         background: 'white',
         position: 'absolute',
         right: '-332px',
-        top: 'calc(25vh + 55px)',
+        top: 'calc(15vh + 45px)',
         transition: 'all .25s',
         padding: '16px',
         'font-size': '16px',
@@ -253,6 +361,8 @@ function setSideMessageBox() {
 
     section = 'template';
     const sideMessageBox = `
+    <link rel="stylesheet" 
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         .templates::-webkit-scrollbar,
         .messages::-webkit-scrollbar {
@@ -365,7 +475,9 @@ function setSideMessageBox() {
 
         $('.heading_name').html(`
             <div style="display:flex;">
-                <div class="back_to_template" style="margin-right:12px;">B</div>
+                <div class="back_to_template" style="margin-right:12px;cursor:pointer;">
+                    <i class="fa fa-arrow-left" style="font-size:16px;"></i>
+                </div>
                 <div style="font-weight:bold;">${template}</div>
             </div>`);
         let messageHtml = '';
@@ -374,13 +486,14 @@ function setSideMessageBox() {
         for (let i = 0; i < messages[key].length; i++) {
             messageHtml += `
             <div class="message">
-                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
                     ${messages[key][i]}
                 </div>
                 <div class="message_action" 
                 style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
-                        style="width:100%;height:100%;cursor:pointer;">
+                    <!-- <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
+                        style="width:100%;height:100%;cursor:pointer;"> -->
+                    <i class="fa fa-paper-plane send_message" style="font-style:16px;cursor:pointer;"></i>
                 </div>
             </div>`;
         }
@@ -410,6 +523,60 @@ function setSideMessageBox() {
     });
 }
 
+function templateValueClickListener(e) {    
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    section = 'message';
+    let template = $(this).text().trim();
+    let key = generateKey(template);
+
+    $('.heading_name').html(`
+        <div style="display:flex;">
+            <div class="back_to_template" style="margin-right:12px;">B</div>
+            <div style="font-weight:bold;">${template}</div>
+        </div>`);
+    let messageHtml = '';
+    messageHtml += `<div class="template_name" style="display:none;">${template}</div>`;
+    if (messages[key] == null) messages[key] = [];
+    for (let i = 0; i < messages[key].length; i++) {
+        messageHtml += `
+        <div class="message">
+            <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;">
+                ${messages[key][i]}
+            </div>
+            <div class="message_action" 
+            style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
+                    style="width:100%;height:100%;cursor:pointer;">
+            </div>
+        </div>`;
+    }
+
+
+    $('.messages').html(messageHtml);
+    $('.templates').css('display', 'none');
+    $('.messages').css('display', 'block');
+
+    $('.send_message').on('click', function(e) {
+        console.log('send_message');
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        let message = $(this).parent().prev().text().trim();
+        console.log(message);
+
+        sendMessage(message);
+    });
+
+    $('.back_to_template').on('click', function(e) {
+        $('.heading_name').html(`<div style="font-weight:bold;margin-bottom:12px;">Templates</div>`);
+        $('.messages').css('display', 'none');
+        $('.templates').css('display', 'block');
+        section = 'template';
+    });
+}
+
 function newMessage(template, message) {
     console.log('new messageeeee');
     let key = generateKey(template);
@@ -419,13 +586,14 @@ function newMessage(template, message) {
         console.log('in the section');
         $('.messages').append(`
             <div class="message">
-                <div class="message_value">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
                     ${message}
                 </div>
                 <div class="message_action"  
                     style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
-                        style="width:100%;height:100%;cursor:pointer;">
+                    <!-- <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
+                        style="width:100%;height:100%;cursor:pointer;"> -->
+                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
                 </div>
             </div>`
         );
@@ -501,7 +669,7 @@ function appendSelectAndAddListener(item, options, o) {
 
         let friendId = $(this).attr('id').split('-')[1];
         console.log('Addind id = ', friendId);
-        let friendName = $(this).prev().text();
+        let friendName = $(this).prev().text().trim();
         let friendImageUrl = $(this).parent().parent().prev().find('img').attr('src');
         let tag = $(this).val();
 
@@ -537,14 +705,26 @@ function appendSelectAndAddListener(item, options, o) {
                     break;
                 }
             }
-            if (!flag) friendList.push({ id: friendId, name: friendName, tag: tag, imageUrl: friendImageUrl });
+            if (!flag) friendList.push({ 
+                id: friendId, 
+                name: friendName, 
+                tag: tag, 
+                imageUrl: friendImageUrl, 
+            });
         }
         console.log('friendList');
         console.log(friendList);
         chrome.storage.sync.set({ friendList });
 
         // Send data to background for saving to the server
-        chrome.runtime.sendMessage({ type: 'addTagToFriend', friendId, friendName, tag, friendImageUrl }); 
+        chrome.runtime.sendMessage({ 
+            type: 'addTagToFriend', 
+            friendId, 
+            friendName, 
+            tag, 
+            friendImageUrl,
+            userAuthToken,
+        }); 
     });
 }
 
@@ -587,6 +767,7 @@ function logout() {
     $chatList.each(function() {
         $(this).find('select').remove();
     });
+    $('.side_message_section').remove();
 }
 
 function selectFriend(friendName) {
@@ -595,30 +776,38 @@ function selectFriend(friendName) {
             console.log('name found');
             console.log($(this));
             $(this).trigger('click');
+            $(this).mclick();
             return false;
         }
     });
 }
 
 function sendMessage(templateMessage) {
-    console.log('bigatron');
-    console.log(templateMessage);
+    //console.log('bigatron');
+    //console.log(templateMessage);
+
+    //console.log(currentFriendSelected);
+    let firstName = currentFriendSelected.substring(0, 
+                    currentFriendSelected.indexOf(' '));
+    //console.log(firstName);
+    templateMessage = templateMessage.replace('NAME', firstName);
+
     let c = 0;
     selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
     if ($(selector).length > 0) {
         $('.__i_').mclick();
         $('#js_1').mclick();
-        console.log(c++);
+        //console.log(c++);
         var evt = new Event('input', { bubbles: true });
         let input = document.querySelector(selector);
-        console.log(evt);
-        console.log(input);
+        //console.log(evt);
+        //console.log(input);
         input.innerHTML = templateMessage;
-        console.log(c++);
+        //console.log(c++);
         input.dispatchEvent(evt);
-        console.log(c++);
+        //console.log(c++);
         $(selector).after('<span data-text="true">'+templateMessage+'</span>');
-        console.log(c++);
+        //console.log(c++);
         var loc = window.location.href;
         loc = loc.split("/t/");
         $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1]+"']").next('li').find('a');
@@ -626,18 +815,18 @@ function sendMessage(templateMessage) {
         let flag = true;
         if ($next.length > 0) {
             $next.mclick();
-            console.log(c++);
+            //console.log(c++);
             flag = true;
         } else {
             $prev.mclick();
-            console.log(c++);
+            //console.log(c++);
             flag = false;
         }
         setTimeout(function() {
-            console.log(c++);
+            //console.log(c++);
             var loc1 = window.location.href;
             loc1 = loc1.split("/t/");
-            console.log(loc1);
+            //console.log(loc1);
             $next = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").next('li').find('a');
             $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
             if (flag) $prev.mclick();

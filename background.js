@@ -1,6 +1,7 @@
 console.log('Hello from the background!');
 
 const backendUrl = 'http://192.168.0.102:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
 
 // Load user auth token required for requires
 let userAuthToken;
@@ -19,20 +20,40 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
             tag: message.tag,
             imageUrl: message.friendImageUrl,
         };
-        console.log(data);
 
         $.ajax({
             type: 'POST',
             url: backendUrl + '/api/user/addTagToFriend',
             data: data,
             beforeSend: function(request) {
-                request.setRequestHeader("x-user-auth-token", userAuthToken);
+                request.setRequestHeader("x-user-auth-token", message.userAuthToken);
             },
             success: function(data, textStatus, request) {
-                console.log('Tag added to Friend');
+                console.log(data);
             },
             error: function (request, textStatus, errorThrown) {
-                console.log('Error in addTagToFriend server');
+                console.log(request);
+            }
+        });
+    } else if (message.type == 'changeTag') {
+        console.log('Changing tag value...');
+        let data = {
+            oldTag: message.oldTag,
+            newTag: message.newTag,
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/changeTag',
+            data: data,
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", message.userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
             }
         });
     }

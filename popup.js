@@ -1,6 +1,7 @@
 console.log('Hello from popup!');
 
 const backendUrl = 'http://192.168.0.102:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
 const colors = ['#fa697c', '#10316b', '#94aa2a', '#fc7fb2', '#888888', '#c71c56', '#a25016', '	#6a3577',
                 '#005b96 ', '#451e3e', '#f37736', '#ffa700', '#03dac6', '#F50057', '#6A1B9A', '#006064',
                 '#009688', '#9CCC65', '#827717', '#C0CA33', '#76FF03', '#F57F17', '#FFA726', '#FF5722',
@@ -55,6 +56,7 @@ $('.go_to_login').click(() => {
 
 
 let tags = [];
+let editTagIndex = -1;
 let friendList = [];
 let lastTagOpened = '';
 let templates = [];
@@ -105,21 +107,29 @@ function addTags() {
     for (let i = 0; i < tags.length; i++) {
         tagHtml += `
             <div class="tag_item" style="background:${tags[i].color}">
-                <div class="tag_value" style="inline-block;">${tags[i].name}</div>
-                <div class="tag_remove" style="display:inline-block;margin-left:10px;">x</div>
+                <div class="upper_section" style="display: flex;">
+                    <div class="tag_value" style="inline-block;">${tags[i].name}</div>
+                    <div class="tag_remove" style="display:inline-block;margin-left:10px;">
+                        <i class="fa fa-remove" style="font-style:16px;"></i>
+                    </div>
+                </div>
+                <div class="lower_section" style="margin-top:10px;display:inline-block;float:right;">
+                    <i class="fa fa-pencil tag_edit" style="font-style:16px;margin-right:6px;"></i>
+                    <i class="fa fa-paint-brush tag_select_color" style="font-style:16px;"></i>
+                </div>
             </div>`;
     }
     $tagBox.append(tagHtml);
+    //$('.picker').colorPick();
 }
 
 function setTemplates() {
-    console.log(templates);
     for (let i = 0; i < templates.length; i++) {
         $('.templates').append(
             `<div class="template" style="display:flex;justify-content:space-between;">
-                <div class="template_value" style="cursor:pointer;">${templates[i]}</div>
-                <div class="each_template_action" style="margin-right:16px;cursor:pointer;">
-                    <img class="logo delete_template" src="./images/delete.png">
+                <div class="template_value" style="cursor:pointer;line-height:1.3;">${templates[i]}</div>
+                <div class="each_template_action" style="cursor:pointer;">
+                    <i class="fa fa-remove delete_template" style="font-size:16px;"></i>
                 </div>
             </div>`
         );
@@ -145,7 +155,7 @@ $('#signup_form').submit(function(e) {
         password: $('#password_signup').val(),
     };
 
-    if (formData.password != $('#confirm_password_signup')) {
+    if (formData.password != $('#confirm_password_signup').val()) {
         console.log('password does not match confirm password');
         return;
     }
@@ -158,13 +168,16 @@ $('#signup_form').submit(function(e) {
             // Save auth token required for further requests
             const authToken = request.getResponseHeader('x-user-auth-token');
             userAuthToken = authToken;
+            console.log('signup auth toekn ', userAuthToken);
             chrome.storage.sync.set({userAuthToken: authToken}, function() {
                 openMain();
                 // Empty input fields
                 $('#email_signup').val('');
                 $('#password_signup').val('');
+
+                loadDataFromServer();
             });
-            loadDataFromServer();
+            
         },
         error: function (request, textStatus, errorThrown) {
             console.log('Error signing up');
@@ -186,17 +199,25 @@ $('#login_form').submit(function(e) {
         type: 'POST',
         url:backendUrl + '/api/user/login',
         data: formData,
+        crossDomain: true,
+        "headers": {
+            "accept": "application/json",
+            "Access-Control-Allow-Origin":"x-requested-with"
+        },
         success: function(data, textStatus, request) {
             // Save auth token required for further requests
+            console.log(request);
+            console.log(request.getAllResponseHeaders());
             const authToken = request.getResponseHeader('x-user-auth-token');
             userAuthToken = authToken;
+            console.log('login auth token', userAuthToken);
             chrome.storage.sync.set({userAuthToken: authToken}, function() {
                 openMain();
                 // Empty input fields
                 $('#email_login').val('');
                 $('#password_login').val('');
+                loadDataFromServer();
             });
-            loadDataFromServer();
         },
         error: function (request, textStatus, errorThrown) {
             console.log('Error signing up');
@@ -209,21 +230,40 @@ function loadDataFromServer() {
     // Get all the tags
     $.ajax({
         type: 'POST',
-        url: backendUrl + '/api/user/getAllTagsAndFriendList',
+        url: backendUrl + '/api/user/loadData',
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
             tags = data.data.tags;
             // Save tags to storage
-            chrome.storage.sync.set({ tags });
+            //chrome.storage.sync.set({ tags });
             
             // Add tags to popup html
             addTags();
 
             friendList = data.data.friends;
             // TODO: save friend list to storage
-            chrome.storage.sync.set({ friendList, messages: data.data.messages });
+            //chrome.storage.sync.set({ friendList, messages: data.data.messages });
+
+            let t = data.data.templates, temp = [], mes = [], storageKey = {};
+            console.log(t);
+            for (let i = 0; i < t.length; i++) {
+                temp.push(t[i].name);
+                let k = generateKey(t[i].name);
+                console.log(t[i].messages);
+                mes[k] = t[i].messages;
+                storageKey[k] = t[i].messages;
+            }
+
+            templates = temp;
+            messages = mes;
+            console.log(messages);
+
+            console.log(storageKey);
+            let stk = { tags, friendList, templates, ...storageKey };
+            console.log(stk);
+            chrome.storage.sync.set(stk);
 
             // Enable extension
             chrome.tabs.getAllInWindow(null, function(tabs) {
@@ -235,8 +275,12 @@ function loadDataFromServer() {
                             userAuthToken: userAuthToken,
                             tags: tags,
                             friendList: friendList,
-                            
+                            mess: mes,
+                            templates,
+                            storageKey,
                         });
+                        console.log('mess = ', messages);
+                        console.log('m', mes);
                         break;
                     }                        
                 }
@@ -256,61 +300,97 @@ $('#add_tag_form').submit(function(e) {
     $tagInput = $('#tag_input');
     tag = $tagInput.val(); // Tag value
 
-    // Cheack if tag is alredy present
-    for (let i = 0; i < tags.length; i++) {
-        if (tags[i] == tag) {
-            console.log('Tag already present');
-            return;
+    if ($('.tag_button').attr('value') == 'Save tag') {
+        console.log('save tag');
+        console.log(editTagIndex);
+        let oldTag = tags[editTagIndex].name;
+        tags[editTagIndex].name = tag;
+        chrome.storage.sync.set({ tags });
+
+        let $tag = $('.tag_box .tag_item:nth-child(' + (editTagIndex + 1) + ')');
+        console.log($tag);
+        $tag.find('.tag_value').text(tag);
+
+        // Send tag to mesenger content.js for adding option tag to the select tag
+        chrome.tabs.getAllInWindow(null, function(tabs) {
+            // Find messenger tab
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].title == 'Messenger') {
+                    chrome.tabs.sendMessage(tabs[i].id, { action: 'editTag', tag, oldTag });
+                    break
+                }                        
+            }
+        });
+    } else {
+        // Cheack if tag is alredy present
+        for (let i = 0; i < tags.length; i++) {
+            if (tags[i] == tag) {
+                console.log('Tag already present');
+                return;
+            }
         }
+
+        // Get aa random color for the tag
+        let r = Math.floor(Math.random() * colors.length);
+        console.log(r);
+        let color = colors[r];
+        console.log(color);
+
+        // Tag not present so add to the tags array
+        tags.push({ name: tag, color: color });
+
+        // Add tag to popup
+        $tagBox.append(`
+            <div class="tag_item" style="background:${color}">
+                <div class="upper_section" style="display: flex;">
+                    <div class="tag_value" style="inline-block;">${tag}</div>
+                    <div class="tag_remove" style="display:inline-block;margin-left:10px;">
+                        <i class="fa fa-remove" style="font-style:16px;"></i>
+                    </div>
+                </div>
+                <div class="lower_section" style="margin-top:10px;display:inline-block;float:right;">
+                    <i class="fa fa-pencil tag_edit" style="font-style:16px;margin-right:6px;"></i>
+                    <i class="fa fa-paint-brush tag_select_color" style="font-style:16px;"></i>
+                </div>
+            </div>`
+        );
+
+        // Reset tag input field to blank
+        $tagInput.val('');
+
+        //Add tag to the server database
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/addTag',
+            data: {
+                name: tag,
+                color: color,
+            },
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", userAuthToken);
+            },
+            success: function(data, textStatus, request) { },
+            error: function (request, textStatus, errorThrown) {
+                console.log('Error signing up');
+            }
+        });
+
+        // Save the tag to local stoarge
+        chrome.storage.sync.set({ tags });
+
+        // Send tag to mesenger content.js for adding option tag to the select tag
+        chrome.tabs.getAllInWindow(null, function(tabs) {
+            // Find messenger tab
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].title == 'Messenger') {
+                    chrome.tabs.sendMessage(tabs[i].id, { action: 'addTag', tag, color });
+                    break;
+                }                        
+            }
+        });
     }
 
-    // Get aa random color for the tag
-    let r = Math.floor(Math.random() * colors.length);
-    console.log(r);
-    let color = colors[r];
-    console.log(color);
-
-    // Tag not present so add to the tags array
-    tags.push({ name: tag, color: color });
-
-    // Add tag to popup
-    $tagBox.append(`<div class="tag_item" style="background:${color}">
-                        <div class="tag_value" style="inline-block;">${tag}</div>
-                        <div class="tag_remove" style="display:inline-block;margin-left:10px;">x</div>
-                    </div>`);
-    // Reset tag input field to blank
-    $tagInput.val('');
-
-    //Add tag to the server database
-    $.ajax({
-        type: 'POST',
-        url: backendUrl + '/api/user/addTag',
-        data: {
-            name: tag,
-            color: color,
-        },
-        beforeSend: function(request) {
-            request.setRequestHeader("x-user-auth-token", userAuthToken);
-        },
-        success: function(data, textStatus, request) { },
-        error: function (request, textStatus, errorThrown) {
-            console.log('Error signing up');
-        }
-    });
-
-    // Save the tag to local stoarge
-    chrome.storage.sync.set({ tags });
-
-    // Send tag to mesenger content.js for adding option tag to the select tag
-    chrome.tabs.getAllInWindow(null, function(tabs) {
-        // Find messenger tab
-        for (let i = 0; i < tabs.length; i++) {
-            if (tabs[i].title == 'Messenger') {
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'addTag', tag, color });
-                break;
-            }                        
-        }
-    });
+    
 });
 
 // Rempve tag
@@ -320,8 +400,11 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
     e.stopImmediatePropagation();
 
     let $parent = $(this).parent();
-    let tag = $parent.find('.tag_value').text().trim();
-    $parent.remove();
+    let tag = $(this).prev().text().trim();
+    console.log($(this).prev());
+    console.log(tag);
+    //$parent.remove();
+    $(this).parent().parent().remove();
 
     chrome.storage.sync.get('lastTagOpened', function(result) {
         if (result.lastTagOpened == tag) {
@@ -347,9 +430,11 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
-        success: function(data, textStatus, request) { },
+        success: function(data, textStatus, request) {
+            console.log(data);
+        },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error removing tag');
+            console.log(request);
         }
     });
 
@@ -362,6 +447,7 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
         }
     }
 
+    console.log(tags);
     // Save the tag to local stoarge
     chrome.storage.sync.set({ tags });
 
@@ -377,6 +463,20 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
     });
 });
 
+$('.tag_box').on('click', '.tag_edit', function(e) {
+    let tag = $(this).parent().prev().find('.tag_value').text().trim();
+    console.log(tag);
+    $('#tag_input').val(tag);
+    $('.tag_button').attr('value', 'Save tag');
+
+    for (let i = 0; i < tags.length; i++) {
+        if (tags[i].name == tag) {
+            editTagIndex = i;
+            console.log(editTagIndex);
+            break;
+        }
+    }
+});
 
 $('.tag_box').on('click', '.tag_value', function(e) {
     console.log('tag value selected');
@@ -389,7 +489,9 @@ $('.tag_box').on('click', '.tag_value', function(e) {
             chrome.storage.sync.set({ lastTagOpened: tag });
 
             $('.note_box').css('display', 'none');
-            $('.template_box').css('display', 'block');
+            if ($('.template_box').css('display') == 'none')
+                $('.message_box').css('display', 'block');
+            else $('.template_box').css('display', 'block');
 
             setTagFriendList(tag);
 
@@ -408,7 +510,6 @@ function setTagFriendList(tag) {
     let friendHtml = '';
     
     let count = 0;
-    console.log(friendList);
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].tag == tag) {
             friends.push(friendList[i]);
@@ -447,6 +548,7 @@ function setTagFriendList(tag) {
 
 
 $('.tag_friend_box').on('click', '.friend_chat', function(e) {
+    console.log('chat friend clicked');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
@@ -670,6 +772,24 @@ $('.message_box').on('click', '.delete_message', function(e) {
             }               
         }
     });
+
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/removeMessageFromTemplate',
+        data: {
+            template, 
+            message,
+        },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data.data);    
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log('Error adding message to friend');
+        }
+    });
 });
 
 $('.nav_template').on('click', function(e) {
@@ -722,10 +842,10 @@ $('.message_box').on('click', '.save_message', function(e) {
     $('.message_textarea').remove();
     $('.messages').append(
         `<div class="message" style="display:flex;justify-content:space-between;">
-            <div class="message_value">${message}</div>
-            <div class="each_message_action" style="margin-right:16px;cursor:pointer;">
-                <img class="logo send_message" src="./images/send.png">
-                <img class="logo delete_message" src="./images/delete.png">
+            <div class="message_value" style="width:240px;line-height:1.3;">${message}</div>
+            <div class="each_message_action" style="cursor:pointer;">
+                <i class="fa fa-paper-plane send_message" style="font-size:15px;margin-right:10px;"></i>
+                <i class="fa fa-remove delete_message" style="font-size:16px;"></i>
             </div>
         </div>`
     );
@@ -765,23 +885,23 @@ $('.message_box').on('click', '.save_message', function(e) {
         }
     });
 
-    // $.ajax({
-    //     type: 'POST',
-    //     url: backendUrl + '/api/user/addMessage',
-    //     data: {
-    //         template, 
-    //         message,
-    //     },
-    //     beforeSend: function(request) {
-    //         request.setRequestHeader("x-user-auth-token", userAuthToken);
-    //     },
-    //     success: function(data, textStatus, request) {
-    //         console.log(data.data);    
-    //     },
-    //     error: function (request, textStatus, errorThrown) {
-    //         console.log('Error adding message to friend');
-    //     }
-    // })
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/addMessageToTemplate',
+        data: {
+            template, 
+            message,
+        },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data.data);    
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log('Error adding message to friend');
+        }
+    });
 });
 
 $('.message_box').on('click', '.cancel_message', function(e) {
@@ -840,10 +960,10 @@ $('.template_box').on('click', '.template_value', function(e) {
     for (let i = 0; i < templateMessage.length; i++) {
         templateMessageHtml += 
         `<div class="message" style="display:flex;justify-content:space-between;">
-            <div class="message_value">${templateMessage[i]}</div>
-            <div class="each_message_action" style="margin-right:16px;cursor:pointer;">
-                <img class="logo send_message" src="./images/send.png">
-                <img class="logo delete_message" src="./images/delete.png">
+            <div class="message_value" style="width:240px;line-height:1.3;">${templateMessage[i]}</div>
+            <div class="each_message_action" style="cursor:pointer;">
+                <i class="fa fa-paper-plane send_message" style="font-size:15px;margin-right:10px;"></i>
+                <i class="fa fa-remove delete_message" style="font-size:16px;"></i>
             </div>
         </div>`;
     }
@@ -896,9 +1016,9 @@ $('.template_box').on('click', '.save_template', function(e) {
     $('.template_textarea').remove();
     $('.templates').append(
         `<div class="template" style="display:flex;justify-content:space-between;">
-            <div class="template_value" style="cursor:pointer;">${template}</div>
-            <div class="each_template_action" style="margin-right:16px;cursor:pointer;">
-                <img class="logo delete_template" src="./images/delete.png">
+            <div class="template_value" style="cursor:pointer;line-height:1.3;">${template}</div>
+            <div class="each_template_action" style="cursor:pointer;">
+                <i class="fa fa-remove delete_template" style="font-size:16px;"></i>
             </div>
         </div>`
     );
@@ -931,20 +1051,20 @@ $('.template_box').on('click', '.save_template', function(e) {
         }
     });
 
-    // $.ajax({
-    //     type: 'POST',
-    //     url: backendUrl + '/api/user/addTemplate',
-    //     data: { template },
-    //     beforeSend: function(request) {
-    //         request.setRequestHeader("x-user-auth-token", userAuthToken);
-    //     },
-    //     success: function(data, textStatus, request) {
-    //         console.log(data.data);
-    //     },
-    //     error: function (request, textStatus, errorThrown) {
-    //         console.log('Error adding template to friend');
-    //     }
-    // })
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/addTemplate',
+        data: { template },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data);
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log(request);
+        }
+    });
 });
 
 $('.template_box').on('click', '.cancel_template', function(e) {
@@ -991,14 +1111,34 @@ $('.template_box').on('click', '.delete_template', function(e) {
             }               
         }
     });
+
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/removeTemplate',
+        data: { template },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data.data);
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log('Error removing template to friend');
+        }
+    });
 });
 
 $('body').on('input', 'textarea', function() {
-    console.log('input...');
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
 });
 
+
+$('.chat_box').click(() => {
+    chrome.tabs.create({
+        url: chrome.runtime.getURL("window.html")
+    });
+});
 
 // Logout button action
 $('.logout_box').click(() => {
