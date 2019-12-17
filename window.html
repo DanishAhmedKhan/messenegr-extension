@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Messages</title>
+    <title>Pepper messages</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="window.css">
 </head>
 <body>
@@ -27,21 +28,21 @@
                         <img class="image circular_image" src="https://scontent.fccu3-1.fna.fbcdn.net/v/t1.0-1/c7.0.40.40a/p40x40/1467248_188144328054637_2050554146_n.jpg?_nc_cat=106&_nc_ohc=p_lx1K4h5jIAQk1FdVU0Q5z3saQdaMrG3UnYo0MRRUWkyscsO7JsJmSgw&_nc_ht=scontent.fccu3-1.fna&oh=37e38589180ac5e6aefe4305e501a1e2&oe=5E77E171" alt="">
                     </div>
                     <div class="nav_header_user_detail">
-                        <div class="nav_header_user_name">Danish Ahmed Khan</div>
+                        <div class="nav_header_user_name">Pepper</div>
                     </div>
                 </div>
             </div>
             <div class="horizontal_line"></div>
             <div class="nav_menu">
                 <div class="nav_menu_list">
-                    <div class="nav_menu_item">Tags</div>
-                    <div class="nav_menu_item">Templates</div>
-                    <div class="nav_menu_item">Setting</div>
+                    <div class="nav_menu_item nav_item_tag">Tags</div>
+                    <div class="nav_menu_item nav_item_template">Templates</div>
+                    <div class="nav_menu_item nav_item_setting">Setting</div>
                 </div>
             </div>
         </section>
 
-        <section class="content">
+        <section id="template" class="content">
             <div class="add_template">
                 <div class="add_template_text">Add a new message template</div>
                 <div class="add_template_form">
@@ -136,18 +137,32 @@
                                         </table>
                                     </div>
                                 </div>
-                            </div>
-                            
+                            </div>  
                         </div>
+                        <form id="loadImageForm" action="" enctype="multipart/form-data" type="post">
+                            <input type="file" id="loadImageInput" style="display:none"/>
+                        </form>
+                        <div class="secondary_button load_image">Image</div>
                         <div class="secondary_button save_message">Save</div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <section id="tag" class="content" style="display:none;">
+            <div class="add_tag">
+                <div class="add_tag_text">Add a new tag</div>
+                <div class="add_tag_form">
+                    <input type="text" class="input add_tag_input" placeholder="New template">
+                    <div class="primary_button add_tag_button">Add Template</div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
-    <script src="jquery.js"></script>    
+    <script src="jquery.js"></script>  
+    <script src="jquery-ui.js"></script>
     <script src="window.js"></script>
 
 </body>

@@ -1,6 +1,6 @@
 console.log('Hello from messenger extension!');
 
-
+// Add custom click function to jQuery
 jQuery.fn.extend({
     'mclick': function () {
         var click_event = document.createEvent('MouseEvents')
@@ -15,9 +15,8 @@ jQuery.fn.extend({
 })
 
 
-
 var conversionListText = "Conversation List";
-
+// In the below selectors the i is for ignore case
 var fb_ul_selector = 'ul[aria-label="' + conversionListText + '" i]';
 var fb_ul_li_selector = "ul[aria-label='" + conversionListText + "' i] li";
 var fb_list_selectors = 'ul[aria-label="' + conversionListText + '" i] li:not([fb_user_id]';
@@ -34,8 +33,8 @@ let templates = [];
 let messages = [];
 let currentFriendSelected = '';
 
-// Load user auth token and friendList
-chrome.storage.sync.get(['userAuthToken', 'friendList', 'tags', 'templates'], function(result) {
+// Load data
+chrome.storage.local.get(['userAuthToken', 'friendList', 'tags', 'templates'], function(result) {
     userAuthToken = result.userAuthToken;
     if (userAuthToken != null && userAuthToken != '') {
         if (result.friendList != null)
@@ -49,12 +48,15 @@ chrome.storage.sync.get(['userAuthToken', 'friendList', 'tags', 'templates'], fu
         for (let i = 0; i < templates.length; i++) {
             storageKeys.push(generateKey(templates[i]));
         }
-        chrome.storage.sync.get(storageKeys, function(r) {
+        chrome.storage.local.get(storageKeys, function(r) {
             for (let i = 0; i < templates.length; i++) {
                 let key = generateKey(templates[i]);
                 messages[key] = r[key];
             }
         });
+
+
+        console.log(friendList);
     }
 });
 
@@ -95,14 +97,9 @@ chrome.runtime.onMessage.addListener(
                 tags = message.tags;
                 templates = message.templates;
                 messages = message.mess;
-                //console.log(message);
-                //console.log(templates);
-                //console.log(messages);
-                //console.log(message.storageKey);
                 for (key in message.storageKey) {
                     messages[key] = message.storageKey[key];
                 }
-                console.log(messages);
                 
                 start();
             break;
@@ -134,14 +131,68 @@ chrome.runtime.onMessage.addListener(
                 console.log('editTag');
                 editTag(message.tag, message.oldTag);
             break;
+            case 'newImage':
+                console.log('newImage');
+                newImage(message.template, message.filename);
+            break;
+            case 'changeTagColor':
+                console.log('changeTagColor');
+                changeTagColor(message.tag, message.color);
+            break;
         }
     }
 );
+
+function changeTagColor(tag, color) {
+    //console.log(tag + ", " + color);
+    $selectOption = $chatBox.find(`li._5l-3 ._1qt5:not("._6zkd") select option[value='${tag}']`);
+    //console.log($selectOption);
+    $selectOption.css('background', color);
+
+    $activeSelectOption = $chatBox.find(`li._5l-3 ._1qt5:not("._6zkd") select option:selected`);
+    $activeSelectOption.each(function() {
+        if ($(this).text().trim() == tag)
+            $(this).parent().css('background', color);
+    });
+
+    for (let i = 0; i < tags.length; i++) {
+        if (tags[i].name == tag) {
+            tags[i].color = color;
+            break;
+        }
+    }
+}
+
+function newImage(template, filename) {
+    let key = generateKey(template);
+    messages[key].push(filename);
+
+    if (section == 'message' && $('.template_name').text().trim() == template) {
+        $('.messages').append(`
+            <div class="message">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">
+                    <img src="${'http://localhost:4400/temp/' + filename}" 
+                        style="width:calc(100% + 6px);margin-top:2px;">
+                </div>
+                <div class="message_action"  
+                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
+                </div>
+            </div>`
+        );
+    }
+}
 
 function editTag(tag, oldTag) {
     $selectOption = $chatBox.find(`li._5l-3 ._1qt5:not("._6zkd") select option[value='${oldTag}']`);
     $selectOption.attr('value', tag);
     $selectOption.text(tag);
+
+    for (let i = 0; i < tags.length; i++) {
+        if (tags[i].name == oldTag) {
+            tags[i].name = tag;
+        }
+    }
 
     // Update friendList with new tag
     for (let i = 0; i < friendList.length; i++) {
@@ -150,7 +201,7 @@ function editTag(tag, oldTag) {
         }
     }
 
-    chrome.storage.sync.set({ friendList });
+    chrome.storage.local.set({ friendList });
     chrome.runtime.sendMessage({ type: 'changeTag', oldTag: oldTag, newTag: tag, userAuthToken });
 }
 
@@ -259,7 +310,8 @@ function deleteMessage(template, message) {
     if (section == 'message' && $('.template_name').text().trim() == template) {
         $children = $('.messages').children();
         $children.each(function() {
-            if ($(this).find('.message_value').text().trim() == message) {
+            if ($(this).find('.message_value').text().trim() == message ||
+                $(this).find('.message_value').find('img').length > 0) {
                 $(this).remove();
                 return false;
             }
@@ -279,8 +331,9 @@ function start() {
 
     $chatBox.arrive('li._5l-3', function() {
         let item = $(this).find('._1qt5:not("._6zkd")');
-        if (item.first().next().length == 0)
+        if (item.find('.tag_select').length == 0) {
             addSelectToFriend(item);
+        }
     });
 
     if (isUserAuthTokenDefined()) {
@@ -324,34 +377,21 @@ function setSideMessageBox() {
         right: '0',
         top: '15vh',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
-        'z-index': '9999'
+        'z-index': '9999',
     });
     let sideMessageBoxStyle = generateStyleCss({
         width: '300px',
-        height: '460px',
+        height: '70vh', //'460px',
         background: 'white',
         position: 'absolute',
         right: '-332px',
         top: 'calc(15vh + 45px)',
         transition: 'all .25s',
         padding: '16px',
+        'padding-right': '12px',
         'font-size': '16px',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
         'z-index': '9999',
-    });
-
-    let templatesStyle = generateStyleCss({
-        width: '100%',
-        height: 'calc(100% - 40px)',
-        display: 'block',
-        'overflow-y': 'auto',
-    });
-
-    let messagesStyle = generateStyleCss({
-        width: '100%',
-        height: 'calc(100% - 40px)',
-        display: 'block',
-        'overflow-y': 'auto',
     });
 
     section = 'template';
@@ -361,8 +401,8 @@ function setSideMessageBox() {
     <style>
         .templates::-webkit-scrollbar,
         .messages::-webkit-scrollbar {
-            width: 6px;
-        } 
+            width: 4px;
+        }
         .templates::-webkit-scrollbar-track,
         .messages::-webkit-scrollbar-track {
             background: white; /*#f1f1f1*/ 
@@ -395,8 +435,7 @@ function setSideMessageBox() {
             border-radius: 4px;
             margin-bottom:12px;
             justify-content: space-between;
-            margin-right: 10px;
-            
+            margin-right: 6px;
         }
         .message:last-child {
             margin-bottom: 0;
@@ -425,7 +464,8 @@ function setSideMessageBox() {
         <div class="side_message_button" style="${sideMessageButtonStyle}">
         </div>
         <div class="side_message_box" style="${sideMessageBoxStyle}">
-            <div class="heading_name" style="margin-bottom:16px;"></div>
+            <div class="heading_name" 
+                style="margin-bottom:16px;display:flex;justify-content:space-between;margin-right:6px;"></div>
             <div class="templates"></div>
             <div class="messages"></div>
         </div>
@@ -447,7 +487,11 @@ function setSideMessageBox() {
         }
     }); 
 
-    $('.heading_name').html(`<div style="font-weight:bold;">Templates</div>`);
+    $('.heading_name').html(`
+        <div style="font-weight:bold;">
+            Templates
+        </div>
+    `);
     let templateHtml = '';
     for (let i = 0; i < templates.length; i++) {
         templateHtml += `
@@ -474,16 +518,28 @@ function setSideMessageBox() {
                     <i class="fa fa-arrow-left" style="font-size:16px;"></i>
                 </div>
                 <div style="font-weight:bold;">${template}</div>
-            </div>`);
+            </div>
+            <div>
+                <!-- <i class="fa fa-image template_image" style="font-size:18px;cursor:pointer;"></i> -->
+            </div>
+        `);
+
         let messageHtml = '';
         messageHtml += `<div class="template_name" style="display:none;">${template}</div>`;
         if (messages[key] == null) messages[key] = [];
         for (let i = 0; i < messages[key].length; i++) {
-            messageHtml += `
+            let main = '';
+            if (messages[key][i].indexOf('--template--') < 0)
+                main = messages[key][i];
+            else 
+                main = `<img src="${'http://localhost:4400/temp/' + messages[key][i]}" 
+                    style="width:calc(100% + 6px);margin-top:2px;">`;
+
+            messageHtml = messageHtml + `
             <div class="message">
-                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
-                    ${messages[key][i]}
-                </div>
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">` + 
+                    main + 
+                `</div>
                 <div class="message_action" 
                 style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
                     <!-- <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
@@ -499,12 +555,12 @@ function setSideMessageBox() {
         $('.messages').css('display', 'block');
 
         $('.send_message').on('click', function(e) {
-            console.log('send_message');
             e.stopPropagation();
             e.stopImmediatePropagation();
 
             let message = $(this).parent().prev().text().trim();
-            console.log(message);
+            if (message == null || message == '') 
+                message = $(this).parent().prev().find('img').attr('src');
 
             sendMessage(message);
         });
@@ -605,7 +661,9 @@ function addSelectToFriend(item) {
     let friendName = item.find('span').text();
 
     $a = item.closest('a._2il3');
-    let id = $a.attr('data-href').split('/t/')[1];
+    //$a = item.closest('._5l-3._1ht5');
+    let id = $a.attr('data-href').split('/t/')[1];//.replace(/./g, '0');
+    //let id = $a.attr('data-testid').split(':')[1];
     $a.closest('li').attr('fb_user_id', id);
 
     let flag = false;
@@ -646,16 +704,10 @@ function appendSelectAndAddListener(item, options, o) {
     if (o.color != null && o.color != '') s = `background:${o.color};color:white;`; 
 
     item.html(item.html() + 
-        `<select id="select-${o.id}" class="tag_select" style="${selectStyle}${s}">
+        `<select id="select-${o.id.replace(/\./g, 'a')}" class="tag_select" style="${selectStyle}${s}">
             <option>...</option>
             ${options}
         </select>`);
-
-    // $('.tag_select').on('click', function(e) {
-    //     e.stopPropagation();
-    //     e.stopImmediatePropagation();
-    //     console.log('click on select');
-    // });
 
     $('.tag_select').on('change', function(e) {
         console.log('change');
@@ -707,9 +759,8 @@ function appendSelectAndAddListener(item, options, o) {
                 imageUrl: friendImageUrl, 
             });
         }
-        console.log('friendList');
         console.log(friendList);
-        chrome.storage.sync.set({ friendList });
+        chrome.storage.local.set({ friendList });
 
         // Send data to background for saving to the server
         chrome.runtime.sendMessage({ 
@@ -741,7 +792,8 @@ function removeTag(tag) {
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].tag == tag) {
             console.log('ID = ', friendList[i].id);
-            $('#' + friendList[i].id).css({
+            console.log($('#select-' + friendList[i].id));
+            $('#select-' + friendList[i].id).css({
                 background: 'white',
                 'color': 'black'
             });
@@ -777,368 +829,76 @@ function selectFriend(friendName) {
     });
 }
 
-function sendMessage(templateMessage) {
-    //console.log('bigatron');
-    //console.log(templateMessage);
+async function loadBlob(fileName) {
+    const fetched = await fetch(fileName);
+    return await fetched.blob();
+}
+  
 
-    //console.log(currentFriendSelected);
+async function sendMessage(templateMessage) {
+    // const url = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Chrome_Material_Icon-450x450.png';
+    // const blobInput = await loadBlob(url);
+  	// const clipboardItemInput = new ClipboardItem({'image/png' : blobInput});
+    // await navigator.clipboard.write([clipboardItemInput]);
+    // return;
+
     let firstName = currentFriendSelected.substring(0, 
                     currentFriendSelected.indexOf(' '));
-    //console.log(firstName);
     templateMessage = templateMessage.replace('NAME', firstName);
 
     let c = 0;
     selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
     if ($(selector).length > 0) {
-        console.log($(selector));
-        
-        let t = $('div[aria-label="New message"] div[contenteditable="true"] ._1mf._1mj');
+        let messageBox = $('._4rv3._7og6[aria-label="New message"]');
 
         $('.__i_').mclick();
         $('#js_1').mclick();
-        //console.log(c++);
+
+        console.log(templateMessage);
+        if (templateMessage.indexOf('--template--') >= 0) {
+            //let url = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Chrome_Material_Icon-450x450.png';
+            let url = templateMessage;
+            let extension = url.substring(url.lastIndexOf('.') + 1);
+            let blobInput = await loadBlob(url);
+            let mimeType = 'image/' + extension;
+            let obj = {};
+            obj[mimeType] = blobInput;
+            let clipboardItemInput = new ClipboardItem({[blobInput.type]: blobInput});
+            await navigator.clipboard.write([clipboardItemInput]);
+            document.execCommand('paste');
+            return;
+        }
+
         var evt = new Event('input', { bubbles: true });
         let input = document.querySelector(selector);
-        //console.log(evt);
-        //console.log(input);
         input.innerHTML = templateMessage;
-        //console.log(c++);
         input.dispatchEvent(evt);
-        //console.log(c++);
-        //console.log($(selector));
         $(selector).after('<span data-text="true">' + templateMessage + '</span>');
-        
 
-        
-        let kk = t.attr('data-offset-key');
-        let ind = kk.indexOf('-') + 1;
-        kk = kk.substring(0, ind) + 1 + kk.substring(ind + 1);
-        console.log(kk);
-        console.log(t);
-        t.append(`
-            <span class="_21wj" data-offset-key="${kk}" 
-            style="background-image: url('https://static.xx.fbcdn.net/images/emoji.php/v9/t88/1/32/1f600.png');">
-                <span class="_7464">
-                    <span data-offset-key="${kk}">
-                        <span data-text="true">😀</span>
-                    </span>
-                </span>
-            </span>
-        `);
-        console.log(t.html());
-
-
-        //console.log(c++);
-        var loc = window.location.href;
+        let loc = window.location.href;
         loc = loc.split("/t/");
-        $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1]+"']").next('li').find('a');
-        $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1]+"']").prev('li').find('a');
+        $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").next('li').find('a');
+        $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").prev('li').find('a');
         let flag = true;
         if ($next.length > 0) {
             $next.mclick();
-            //console.log(c++);
             flag = true;
         } else {
             $prev.mclick();
-            //console.log(c++);
             flag = false;
         }
         setTimeout(function() {
-            //console.log(c++);
-            var loc1 = window.location.href;
+            let loc1 = window.location.href;
             loc1 = loc1.split("/t/");
-            //console.log(loc1);
             $next = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").next('li').find('a');
             $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
             if (flag) $prev.mclick();
             else $next.mclick();
-
-            
-            // setTimeout(function() {
-            //     console.log(c++);
-            //     $('._38lh').mclick();
-            // }, 100);
         }, 100);
     } else {
         console.log('Message already typed in the message box');
     }
 }
 
-function sendMessage2(note) {
-    $textInputBox = $('._5rpb ._1mf span');
-    $textInputBox.trigger('click');
-    console.log($textInputBox);
-    $textInputBox.html(`<span data-text="true">${note}</span>`)
-    // let $navFocus = $('._kmc._7kpg.navigationFocus');
-    // console.log($navFocus);
-    // $navFocus.trigger('click');
-    // let $bb = $('._5rp7._5rp8');
-    // console.log($bb);
-    //$bb.trigger('click');
-    // $placeholder = $('._1p1t');
-    // $placeholder.remove();
-    // $main = $('._5rpu');
-    // $main.trigger('click');
-    // console.log($main);
-    // $a = $('._7kpk');
-    // $a.trigger('click');
-    // console.log($a);
 
-    // for (let i = 0; i < note.length; i++) {
-    //     simulateKeyPress(note.charAt(i));
-    // }
-
-    $send = $('._30yy._7kpj');
-    console.log($send);
-    $send.attr({
-        'aria-label': 'Send',
-        'data-hover': 'tooltip',
-        'data-tooltip-content': 'Press enter to send\nPress Shift+Enter to add a new paragraph',
-
-    });
-    $send.removeAttr('title');
-    $send.removeClass('_5j_u _4rv9 _6ymq _7kpj').addClass('_38lh _7kpi');
-
-    $send.html(`
-        <svg height="36px" width="36px" viewBox="0 0 36 36">
-            <g fill="none" fill-rule="evenodd">
-                <g>
-                    <polygon points="0 36 36 36 36 0 0 0"></polygon>
-                    <path d="M31.1059281,19.4468693 L10.3449666,29.8224462 C8.94594087,30.5217547 
-                    7.49043432,29.0215929 8.17420251,27.6529892 C8.17420251,27.6529892 10.7473302,22.456697 
-                    11.4550902,21.0955966 C12.1628503,19.7344961 12.9730756,19.4988922 20.4970248,18.5264632 
-                    C20.7754304,18.4904474 21.0033531,18.2803547 21.0033531,17.9997309 C21.0033531,17.7196073 
-                    20.7754304,17.5095146 20.4970248,17.4734988 C12.9730756,16.5010698 12.1628503,16.2654659 
-                    11.4550902,14.9043654 C10.7473302,13.5437652 8.17420251,8.34697281 8.17420251,8.34697281 
-                    C7.49043432,6.9788693 8.94594087,5.47820732 10.3449666,6.1775158 L31.1059281,16.553593 
-                    C32.298024,17.1488555 32.298024,18.8511065 31.1059281,19.4468693" fill="#0099ff"></path>
-                </g>
-            </g>
-        </svg>
-    `);
-}
-
-function sendMessage3(templateMessage) {
-    console.log('my message');
-    var pathname = window.location.pathname.toString();
-    if (pathname.indexOf('/inbox/') > -1) {
-        console.log('INBOX');
-        var sendPageMessage = templateMessage;
-        selector = '._1p7p._5id1._4dv_._58al.uiTextareaAutogrow';
-        if($(selector).length > 0){
-            var evt = new Event('input', {
-                        bubbles: true  
-                    });
-            var input = document.querySelector(selector);
-            input.innerHTML = templateMessage;
-            input.dispatchEvent(evt);
-        }
-            $('._4jy0._4jy3._4jy1._51sy.selected').mclick();
-    } else {
-        selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
-        if($(selector).length > 0){
-            var evt = new Event('input', {
-                        bubbles: true  
-                    });
-            var input = document.querySelector(selector);
-            input.innerHTML = templateMessage;
-            input.dispatchEvent(evt);
-            $(selector).after('<span data-text="true">'+templateMessage+'</span>');
-            var loc = window.location.href;
-            loc = loc.split("/t/");
-            console.log('loc', loc[1]);
-            console.log($('._38lh'));
-            $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-            setTimeout(function() {
-                var loc1 = window.location.href;
-                loc1 = loc1.split("/t/");
-                $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-                setTimeout(function() {
-                    $('._38lh').mclick();
-                }, 100);
-            }, 100);
-            //$('._38lh').mclick();
-            
-            //console.log($(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a'));
-
-            //$next = $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a');
-            //$prev = $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").prev('li').find('a');
-
-            //if ($next.length > 0) $next.mclick();
-            //else $prev.mclick();
-
-            // setTimeout(function() {
-            //     $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").mclick();
-                
-            // }, 200);
-
-            
-
-
-            return;
-            setTimeout(function(){
-                var loc1 = window.location.href;
-                loc1 = loc1.split("/t/");
-                $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-                console.log($(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a'));
-                setTimeout(function(){
-                    $('div[aria-label="New message"]').find('a[role="button"]').mclick();
-                    console.log($('div[aria-label="New message"]').find('a[role="button"]'));
-                    /*******************/
-                    var loc = window.location.href;
-                    loc = loc.split("/t/");
-                    $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-                    console.log($(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a'));
-                    setTimeout(function(){
-                        var loc1 = window.location.href;
-                        loc1 = loc1.split("/t/");
-                        $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-                    },200);
-                    /*******************/
-                },200);
-            },200);
-        } else {
-            console.log('NOT SELECTOR');
-            $('div[aria-label="New message"] div[contenteditable="true"] span span').text(templateMessage);
-            $('div[aria-label="New message"]').find('a[role="button"]').mclick();
-            /*******************/
-            var loc = window.location.href;
-            loc = loc.split("/t/");
-            $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-            setTimeout(function(){
-                var loc1 = window.location.href;
-                loc1 = loc1.split("/t/");
-                $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-            },200);
-            /*******************/
-        }
-
-    }
-}
-
-function sendMessage4(templateMessage){
-    var pathname = window.location.pathname.toString();
-    if (pathname.indexOf('/inbox/') > -1) {
-        var sendPageMessage = templateMessage;
-        selector = '._1p7p._5id1._4dv_._58al.uiTextareaAutogrow';
-        if($(selector).length > 0){
-            var evt = new Event('input', {
-                        bubbles: true  
-                    });
-            var input = document.querySelector(selector);
-            input.innerHTML = templateMessage;
-            input.dispatchEvent(evt);
-        }
-         $('._4jy0._4jy3._4jy1._51sy.selected').mclick();
-    } else {
-        selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
-        if($(selector).length > 0){
-            var evt = new Event('input', {
-                        bubbles: true  
-                    });
-            var input = document.querySelector(selector);
-            input.innerHTML = templateMessage;
-            input.dispatchEvent(evt);
-            $(selector).after('<span data-text="true">'+templateMessage+'</span>');
-            var loc = window.location.href;
-            loc = loc.split("/t/");
-            $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-            setTimeout(function(){
-                var loc1 = window.location.href;
-                loc1 = loc1.split("/t/");
-                $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-                setTimeout(function(){
-                    $('div[aria-label="New message"]').find('a[role="button"]').mclick();
-                    /*******************/
-                    var loc = window.location.href;
-                    loc = loc.split("/t/");
-                    $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-                    setTimeout(function(){
-                        var loc1 = window.location.href;
-                        loc1 = loc1.split("/t/");
-                        $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-                    },100);
-                    /*******************/
-                },100);
-            },100);
-        } else {
-            $('div[aria-label="New message"] div[contenteditable="true"] span span').text(templateMessage);
-            $('div[aria-label="New message"]').find('a[role="button"]').mclick();
-            /*******************/
-            var loc = window.location.href;
-            loc = loc.split("/t/");
-            $(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-            setTimeout(function(){
-                var loc1 = window.location.href;
-                loc1 = loc1.split("/t/");
-                $(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-            },100);
-            /*******************/
-        }
-
-    }
-}
-
-function sendMessage5(templateMessage) {
-    selector = 'div[aria-label="New message"] div[contenteditable="true"] span br';
-			if($(selector).length > 0){
-                $('.js_1').mclick();
-				var evt = new Event('input', {
-							bubbles: true  
-						});
-				var input = document.querySelector(selector);
-				input.innerHTML = templateMessage;
-				input.dispatchEvent(evt);
-				$(selector).after('<span data-text="true">'+templateMessage+'</span>');
-				var loc = window.location.href;
-				loc = loc.split("/t/");
-				$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-				setTimeout(function(){
-					var loc1 = window.location.href;
-					loc1 = loc1.split("/t/");
-					$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-					setTimeout(function(){
-						$('div[aria-label="New message"]').find('a[role="button"]').mclick();
-						/*******************/
-						var loc = window.location.href;
-						loc = loc.split("/t/");
-						$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-						setTimeout(function(){
-							var loc1 = window.location.href;
-							loc1 = loc1.split("/t/");
-							$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-						},200);
-						/*******************/
-					},200);
-				},200);
-			} else {
-				$('div[aria-label="New message"] div[contenteditable="true"] span span').text(templateMessage);
-				$('div[aria-label="New message"]').find('a[role="button"]').mclick();
-				/*******************/
-				var loc = window.location.href;
-				loc = loc.split("/t/");
-				$(fb_ul_selector+" li[fb_user_id='"+loc[1]+"']").next('li').find('a').mclick();
-				setTimeout(function(){
-					var loc1 = window.location.href;
-					loc1 = loc1.split("/t/");
-					$(fb_ul_selector+" li[fb_user_id='"+loc1[1]+"']").prev('li').find('a').mclick();
-				},200);
-				/*******************/
-			}
-}
-
-function simulateKeyPress(character) {
-    console.log('char  = ', character);
-    //jQuery.event.trigger({ type : 'keypress', which : character.charCodeAt(0) });
-
-    console.log($('._5rpu'));
-
-    var e = $.Event('keypress');
-    e.which = 65; // Character 'A'
-    $('._5rpu').trigger(e);
-    $('._1mf').trigger(e);
-    $('._5rpb').trigger(e);
-    $('._5rp7._5rp8').trigger(e);
-    
-}
   

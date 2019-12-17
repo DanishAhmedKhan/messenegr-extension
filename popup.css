@@ -10,6 +10,7 @@ body {
     font-family: 'Lato', sans-serif;
     font-weight: 400;
     font-size: 16px;
+    position: ralatives;
 }
 
 .label {
@@ -119,7 +120,7 @@ body {
     width: 90%;
     margin: 0 auto;
     margin-top: 25px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .tag_text {
@@ -225,6 +226,10 @@ body {
     padding-left: 6px;
 }
 
+.select_color_box {
+    display: inline-block;
+    position: relative;
+}
 
 
 /* sidebox */

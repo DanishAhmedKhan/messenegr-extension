@@ -1,6 +1,6 @@
 console.log('Hello from the background!');
 
-const backendUrl = 'http://192.168.0.102:4400';
+const backendUrl = 'http://localhost:4400';
 //const backendUrl = 'http://13.232.210.23:4400';
 
 // Load user auth token required for requires
