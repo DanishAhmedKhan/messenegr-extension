@@ -1,7 +1,7 @@
 // Local development serrver
 let backendUrl = 'http://localhost:4400';
 // Production AWS EC2 server
-// const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
 
 let userAuthToken; // User authentication JSON web token
 let templates = [];
@@ -249,7 +249,49 @@ $('.templates').on('click', '.template', function(e) {
     }
 
     $('.messages').html('<ul id="messageSortable">' + messageHtml + '</ul>');
-    $('#messageSortable').sortable();
+    $('#messageSortable').sortable({
+        cursor: 'move',
+        delay: 100,
+        start: function(event, ui) {
+            let startPos = ui.item.index();
+            ui.item.data('m_start_pos', startPos);
+            console.log(startPos);
+        },
+        update: function(event, ui) {
+            let i1 = ui.item.data('m_start_pos');
+            let i2 = ui.item.index();
+            console.log(i2);
+
+            let template = $('.template_selected').find('.template_value').text().trim();
+            let key = generateKey(template);
+
+            let m = messages[key];
+            let tmp = m[i1];
+            m.splice(i1, 1);
+            m.splice(i2, 0, tmp);
+
+            chrome.storage.local.set({ [key]: m });
+
+            $.ajax({
+                type: 'POST',
+                url: backendUrl + '/api/user/changeMessageOrder',
+                data: {
+                    template,
+                    i1, 
+                    i2,
+                },
+                beforeSend: function(request) {
+                    request.setRequestHeader("x-user-auth-token", userAuthToken);
+                },
+                success: function(data, textStatus, request) {
+                    console.log(data);    
+                },
+                error: function (request, textStatus, errorThrown) {
+                    console.log(request);
+                }
+            });
+        }
+    });
 });
 
 $('.templates').on('click', '.delete_template', function(e) {
