@@ -1,7 +1,7 @@
 console.log('Hello from popup!');
 
-const backendUrl = 'http://localhost:4400';
-//const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://localhost:4400';
+const backendUrl = 'http://13.232.210.23:4400';
 
 // Radom colors for tag
 const colors = ['#fa697c', '#10316b', '#94aa2a', '#fc7fb2', '#888888', '#c71c56', '#a25016', '	#6a3577',
@@ -39,7 +39,7 @@ function openMain() {
 let userAuthToken = '';
 chrome.storage.local.get(['userAuthToken'], function(result) {
     authToken = result.userAuthToken;
-    if (authToken == null || authToken == '') openSignup(); // Not logged in
+    if (authToken == null || authToken == '') openLogin(); // Not logged in
     else {
         // Logged in
         openMain();
@@ -63,17 +63,20 @@ let friendList = [];
 let lastTagOpened = '';
 let templates = [];
 let messages = [];
+let sideBox = true;
 
 function generateKey(str) {
     return str.replace(/ /g, '-');
 }
 
-let storageKeys = ['tags', 'friendList', 'lastTagOpened', 'templates', 'messages'];
+let storageKeys = ['tags', 'sideBox', 'friendList', 'lastTagOpened', 'templates', 'messages'];
 
 // Initialize popup. Get tags and friendList from storage
 chrome.storage.local.get(storageKeys, function(result) {
     if (result.tags != null)
         tags = result.tags;
+    if (result.sideBox != null)
+        sideBox = result.sideBox;
     if (result.friendList != null)
         friendList = result.friendList;
     if (result.lastTagOpened != null)
@@ -95,16 +98,35 @@ chrome.storage.local.get(storageKeys, function(result) {
             }
         }
     });
-    
+
     // Add all saved tags to the popup
+    setSelectCheckbox();
     addTags();
     if (lastTagOpened != null && lastTagOpened != '')
         setTagFriendList(lastTagOpened);
     setTemplates();
 });
 
+function setSelectCheckbox() {
+    console.log(sideBox);
+    if (sideBox) {
+        $('input[type="checkbox"]').prop('checked', true);
+    } else {
+        $('input[type="checkbox"]').prop('checked', false);
+    }
+}
+
 function addTags() {
     $tagBox = $('.tag_box');
+
+    $('.tag_outer')
+        .resizable({
+            minHeight: 63,
+            handles: 's',
+            autoHide: true,
+        });
+
+
     tagHtml = '';
     for (let i = 0; i < tags.length; i++) {
         tagHtml += `
@@ -112,22 +134,61 @@ function addTags() {
                 <div class="upper_section" style="display: flex;">
                     <div class="tag_value" style="inline-block;">${tags[i].name}</div>
                     <div class="tag_remove" style="display:inline-block;margin-left:10px;">
-                        <i class="fa fa-trash-o" style="font-style:16px;"></i>
+                        <i class="fa fa-trash-o" style="font-size:14px;"></i>
                     </div>
                 </div>
-                <div class="lower_section" style="margin-top:7px;display:inline-block;float:right;">
-                    <i class="fa fa-pencil tag_edit" style="font-style:16px;margin-right:4px;"></i>
-                    <i class="fa fa-paint-brush tag_select_color" style="font-style:16px;"></i>
+                <div class="lower_section" style="margin-top:4px;display:inline-block;float:right;">
+                    <i class="fa fa-pencil tag_edit" style="font-size:14px;margin-right:2px;"></i>
+                    <i class="fa fa-paint-brush tag_select_color" style="font-size:14px;"></i>
                 </div>
             </div>`;
     }
     $tagBox.append(tagHtml);
+
+    $('.tag_box').sortable({
+        cursor: 'move',
+        start: function(event, ui) {
+            let startPos = ui.item.index();
+            ui.item.data('start_pos', startPos);
+            //console.log(startPos);
+        },
+        update: function(event, ui) {
+            let i1 = ui.item.data('start_pos');
+            let i2 = ui.item.index();
+            console.log(i1);
+            console.log(i2);
+
+            let tmp = tags[i1];
+            tags.splice(i1, 1);
+            tags.splice(i2, 0, tmp);
+
+            chrome.storage.local.set({ tags });
+
+            $.ajax({
+                type: 'POST',
+                url: backendUrl + '/api/user/changeTagOrder',
+                data: {
+                    i1,
+                    i2,
+                },
+                beforeSend: function(request) {
+                    request.setRequestHeader("x-user-auth-token", userAuthToken);
+                },
+                success: function(data, textStatus, request) {
+                    console.log(data);
+                },
+                error: function (request, textStatus, errorThrown) {
+                    console.log(request);
+                }
+            });
+        }
+    });
 }
 
 function setTemplates() {
     for (let i = 0; i < templates.length; i++) {
         $('.templates').append(
-            `<div class="template" style="display:flex;justify-content:space-between;">
+            `<div class="template" style="cursor:pointer;display:flex;justify-content:space-between;">
                 <div class="template_value" style="cursor:pointer;line-height:1.3;">${templates[i]}</div>
                 <div class="each_template_action" style="cursor:pointer;">
                     <i class="fa fa-remove delete_template" style="font-size:16px;"></i>
@@ -135,6 +196,53 @@ function setTemplates() {
             </div>`
         );
     }
+
+    $('.templates').sortable({
+        cursor: 'move',
+        start: function(event, ui) {
+            let startPos = ui.item.index();
+            ui.item.data('start_pos', startPos);
+            console.log(startPos);
+        },
+        update: function(event, ui) {
+            let i1 = ui.item.data('start_pos');
+            let i2 = ui.item.index();
+            console.log(i2);
+
+            let tmp = templates[i1];
+            templates.splice(i1, 1);
+            templates.splice(i2, 0, tmp);
+
+            chrome.storage.local.set({ templates });
+
+            chrome.tabs.getAllInWindow(null, function(tabs) {
+                for (let i = 0; i < tabs.length; i++) { // Find messenger tab
+                    if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
+                        chrome.tabs.sendMessage(tabs[i].id, { action: 'changeTemplateOrder', i1, i2 });
+                    }
+                }
+            });
+
+            // Send data to background for reordering tenplate in the server
+            $.ajax({
+                type: 'POST',
+                url: backendUrl + '/api/user/changeTemplateOrder',
+                data: {
+                    i1, i2,
+                },
+                beforeSend: function(request) {
+                    request.setRequestHeader("x-user-auth-token", userAuthToken);
+                },
+                success: function(data, textStatus, request) {
+                    console.log(data);
+                },
+                error: function (request, textStatus, errorThrown) {
+                    console.log(request);
+                }
+            });
+        }
+    });
+
 
     $('.save_template').css({
         'pointer-events': 'none',
@@ -178,7 +286,7 @@ $('#signup_form').submit(function(e) {
 
                 loadDataFromServer();
             });
-            
+
         },
         error: function (request, textStatus, errorThrown) {
             console.log('Error signing up');
@@ -239,7 +347,7 @@ function loadDataFromServer() {
             tags = data.data.tags;
             // Save tags to storage
             //chrome.storage.sync.set({ tags });
-            
+
             // Add tags to popup html
             addTags();
 
@@ -259,6 +367,9 @@ function loadDataFromServer() {
 
             templates = temp;
             messages = mes;
+
+            setTemplates();
+
             console.log(messages);
 
             console.log(storageKey);
@@ -271,7 +382,7 @@ function loadDataFromServer() {
                 // Find messenger tab
                 for (let i = 0; i < tabs.length; i++) {
                     if (tabs[i].title == 'Messenger') {
-                        chrome.tabs.sendMessage(tabs[i].id, { 
+                        chrome.tabs.sendMessage(tabs[i].id, {
                             action: 'enableExtension',
                             userAuthToken: userAuthToken,
                             tags: tags,
@@ -283,7 +394,7 @@ function loadDataFromServer() {
                         console.log('mess = ', messages);
                         console.log('m', mes);
                         break;
-                    }                        
+                    }
                 }
             });
         },
@@ -294,24 +405,57 @@ function loadDataFromServer() {
 }
 
 function setTagFriendList(tag) {
-    let buttonStyle = 'cursor:pointer;font-size:14px;padding:5px 16px;border-radius:16px;background:blue;color:white;';
+    let buttonStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;border-radius:15px;background:blue;color:white;';
+    let selectStyle = `width:100px;margin-right:4px;margin-left:4px;appearance:none;color:white;`;
+    let optionStyle = `color:white;padding:4px;`;
     let friends = [];
     let friendHtml = '';
-    
+
     let count = 0;
+    let options = '';
+    let color = '';
+
+    console.log('Friend List');
+    console.log(friendList);
+
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].tag == tag) {
+
+            options = '';
+            //options = `<option style="background:white;color:black;" value="...">...</option>`
+
+            for (let j = 0; j < tags.length; j++) {
+                if (tags[j].name == tag) {
+                    color = tags[j].color;
+                    options +=
+                    `<option style="background:${tags[j].color};${optionStyle}" value="${tags[j].name}" selected>
+                        ${tags[j].name}
+                    </option>`;
+                } else {
+                    options +=
+                    `<option style="background:${tags[j].color};${optionStyle}" value="${tags[j].name}">
+                        ${tags[j].name}
+                    </option>`;
+                }
+            }
+
             friends.push(friendList[i]);
-            friendHtml +=   
+            friendHtml +=
                 `<div class="tag_friend_item" style="display:flex;padding-left: 6px;">
                     <div class="friend_image" style="width:55px;height:55px;background:grey;border-radius:50%;overflow:hidden;">
                         <img style="width:100%;height:100%;" src="${friendList[i].imageUrl}">
                     </div>
                     <div class="friend_detail" style="margin-left:16px;">
-                        <div class="friend_name" style="margin-top:2px;margin-bottom:8px;">${friendList[i].name}</div>
+                        <div class="friend_main">
+                            <div class="friend_name" style="overflow:hidden;text-overflow:elipsis;">${friendList[i].name}</div>
+                            <select id='select-${friendList[i].id}' class="friend_select" style="${selectStyle}background:${color};">
+                                ${options}
+                            </select>
+                        </div>
                         <div class="friend_action" style="display:flex;">
                             <div class="friend_chat" style="${buttonStyle}margin-right:16px;">Chat</div>
-                            <div class="friend_note" style="${buttonStyle}">Note</div>
+                            <div class="friend_note" style="${buttonStyle}margin-right:16px;">Note</div>
+                            <div class="friend_remove" style="${buttonStyle}">Remove</div>
                         </div>
                     </div>
                 </div>`;
@@ -320,22 +464,139 @@ function setTagFriendList(tag) {
     }
 
     if (count > 0) {
-        friendHtml = 
-            `<div style="font-weight:14px;font-weight:bold;">Contacts for 
-                <span style="font-style:italic">'${tag}'</span>
+        friendHtml =
+            `<div style="font-weight:14px;font-weight:bold;">Contacts for
+                <span class="tag_heading_for_friend_list" style="font-style:italic">'${tag}'</span>
             </div>` + friendHtml;
     } else {
-        friendHtml = 
-            `<div style="font-weight:14px;font-weight:bold;">No contacts available for 
-                <span style="font-style:italic">'${tag}'</span>
+        friendHtml =
+            `<div style="font-weight:14px;font-weight:bold;">No contacts available for
+                <span class="tag_heading_for_friend_list" style="font-style:italic">'${tag}'</span>
             </div>` + friendHtml;
     }
 
     $friendBox = $('.tag_friend_box');
     $friendBox.html(friendHtml);
+
+    $('.friend_select').on('change', function(e) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        let friendId = $(this).attr('id').split('-')[1];
+        console.log('IIDD = ', friendId);
+        let friendName = $(this).prev().text().trim();
+        let friendImageUrl = $(this).parent().parent().prev().find('img').attr('src');
+        let tag = $(this).val();
+
+        if (tag == '...') {
+            $(this).css({
+                'background': 'white',
+                'color': 'black',
+            });
+        } else {
+            for (let i = 0; i < tags.length; i++) {
+                if (tags[i].name == tag) {
+                    $(this).css({
+                        'background': tags[i].color,
+                        'color': 'white',
+                    });
+                }
+            }
+        }
+
+        if (tag == '...') {
+            for (let i = 0; i < friendList.length; i++) {
+                if (friendList[i].name == friendName) {
+                    friendList.splice(i, 1);
+                    break;
+                }
+            }
+        } else {
+            let flag = false;
+            for (let k = 0; k < friendList.length; k++) {
+                if (friendList[k].name == friendName) {
+                    friendList[k].tag = tag;
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) friendList.push({
+                id: friendId,
+                name: friendName,
+                tag: tag,
+                imageUrl: friendImageUrl,
+            });
+        }
+        console.log(friendList);
+        chrome.storage.local.set({ friendList });
+
+        $(this).parent().parent().parent().remove();
+
+        // if (tag != '...') {
+        //     let allTags = $('.tag_value');
+        //     allTags.each(function() {
+        //         if ($(this).text().trim() == tag) {
+        //             $(this).trigger('click');
+        //             return false;
+        //         }
+        //     });
+        // }
+
+        chrome.tabs.getAllInWindow(null, function(tabs) {
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].title == 'Messenger') { // Find messenger tab
+                    chrome.tabs.sendMessage(tabs[i].id, { action: 'changeSelect', id: friendId, tag });
+                    break;
+                }
+            }
+        });
+
+        // // Send data to background for saving to the server
+        // chrome.runtime.sendMessage({
+        //     type: 'addTagToFriend',
+        //     friendId,
+        //     friendName,
+        //     tag,
+        //     friendImageUrl,
+        //     userAuthToken,
+        // });
+    });
 }
 
 
+$('.tag_friend_box').on('click', '.friend_remove', function(e) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let friendId = $(this).parent().prev().find('.friend_select').attr('id').split('-')[1];
+    console.log(friendId);
+
+    $(this).parent().parent().parent().remove();
+
+    console.log(friendList);
+
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].id == friendId) {
+            friendList.splice(i, 1);
+            break;
+        }
+    }
+
+    console.log(friendList);
+
+    chrome.storage.local.set({ friendList });
+
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            if (tabs[i].title == 'Messenger') { // Find messenger tab
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'changeSelect', id: friendId, tag: '...' });
+                break;
+            }
+        }
+    });
+
+
+});
 
 $('#add_tag_form').submit(function(e) {
     e.preventDefault();
@@ -344,14 +605,30 @@ $('#add_tag_form').submit(function(e) {
     tag = $tagInput.val(); // Tag value
 
     if ($('.tag_button').attr('value') == 'Save tag') {
-        console.log('save tag');
-        console.log(editTagIndex);
+        $('#tag_input').val('');
+
         let oldTag = tags[editTagIndex].name;
         tags[editTagIndex].name = tag;
         chrome.storage.local.set({ tags });
 
+        let tt = $('.tag_heading_for_friend_list').text().trim();
+        tt = tt.substring(1, tt.length - 1);
+        if (tt == oldTag) {
+            $('.tag_heading_for_friend_list').text("'" + tag + "'");
+        }
+
+        let select = $(`.tag_friend_box .friend_select option[value="${oldTag}"]`);
+        select.attr('value', tag);
+        select.text(tag);
+
+        for (let i = 0; i < friendList.length; i++) {
+            if (friendList[i].tag == oldTag)
+                friendList[i].tag = tag;
+        }
+
+        chrome.storage.local.set({ friendList, lastTagOpened: tag });
+
         let $tag = $('.tag_box .tag_item:nth-child(' + (editTagIndex + 1) + ')');
-        console.log($tag);
         $tag.find('.tag_value').text(tag);
 
         // Send tag to mesenger content.js for adding option tag to the select tag
@@ -361,7 +638,7 @@ $('#add_tag_form').submit(function(e) {
                 if (tabs[i].title == 'Messenger') {
                     chrome.tabs.sendMessage(tabs[i].id, { action: 'editTag', tag, oldTag });
                     break
-                }                        
+                }
             }
         });
     } else {
@@ -388,12 +665,12 @@ $('#add_tag_form').submit(function(e) {
                 <div class="upper_section" style="display: flex;">
                     <div class="tag_value" style="inline-block;">${tag}</div>
                     <div class="tag_remove" style="display:inline-block;margin-left:10px;">
-                        <i class="fa fa-remove" style="font-style:16px;"></i>
+                        <i class="fa fa-remove" style="font-size:14px;"></i>
                     </div>
                 </div>
-                <div class="lower_section" style="margin-top:10px;display:inline-block;float:right;">
-                    <i class="fa fa-pencil tag_edit" style="font-style:16px;margin-right:6px;"></i>
-                    <i class="fa fa-paint-brush tag_select_color" style="font-style:16px;"></i>
+                <div class="lower_section" style="margin-top:4px;display:inline-block;float:right;">
+                    <i class="fa fa-pencil tag_edit" style="font-size:14px;margin-right:2px;"></i>
+                    <i class="fa fa-paint-brush tag_select_color" style="font-ssize:14px;"></i>
                 </div>
             </div>`
         );
@@ -412,9 +689,11 @@ $('#add_tag_form').submit(function(e) {
             beforeSend: function(request) {
                 request.setRequestHeader("x-user-auth-token", userAuthToken);
             },
-            success: function(data, textStatus, request) { },
+            success: function(data, textStatus, request) {
+                console.log(data);
+            },
             error: function (request, textStatus, errorThrown) {
-                console.log('Error signing up');
+                console.log(request);
             }
         });
 
@@ -428,10 +707,19 @@ $('#add_tag_form').submit(function(e) {
                 if (tabs[i].title == 'Messenger') {
                     chrome.tabs.sendMessage(tabs[i].id, { action: 'addTag', tag, color });
                     break;
-                }                        
+                }
             }
         });
+
+        let sel = $('.friend_select');
+        sel.each(function() {
+            $(this).append(`
+                <option style="background:${color};color:white;" value="${tag}">${tag}</option>
+            `);
+        });
     }
+
+    $('.tag_button').attr('value', 'Add tag');
 });
 
 let tagClickedForColor = null;
@@ -448,103 +736,127 @@ $('.tag_box').on('click', '.tag_select_color', function(e) {
 
     $('#color_box').remove();
 
+    let colors = [
+        ['B71C1C', 'C62828', 'D32F2F', 'E53935', 'F44336', 'EF5350', 'E57373', 'EF9A9A', 'FFCDD2'],
+        ['880E4F', 'AD1457', 'C2185B', 'D81B60', 'E91E63', 'EC407A', 'F06292', 'F48FB1', 'F8BBD0'],
+        ['4A148C', '6A1B9A', '7B1FA2', '8E24AA', '9C27B0', 'AB47BC', 'BA68C8', 'CE93D8', 'E1BEE7'],
+        ['311B92', '4527A0', '512DA8', '5E35B1', '673AB7', '7E57C2', '9575CD', 'B39DDB', 'D1C4E9'],
+        ['1A237E', '283593', '303F9F', '3949AB', '3F51B5', '5C6BC0', '7986CB', '9FA8DA', 'C5CAE9'],
+        ['0D47A1', '1565C0', '1976D2', '1E88E5', '2196F3', '42A5F5', '64B5F6', '90CAF9', 'BBDEFB'],
+        ['01579B', '0277BD', '0288D1', '039BE5', '03A9F4', '29B6F6', '4FC3F7', '81D4FA', 'B3E5FC'],
+        ['006064', '00838F', '0097A7', '00ACC1', '00BCD4', '26C6DA', '4DD0E1', '80DEEA', 'B2EBF2'],
+        ['004D40', '00695C', '00796B', '00897B', '009688', '26A69A', '4DB6AC', '80CBC4', 'B2DFDB'],
+        ['1B5E20', '2E7D32', '388E3C', '43A047', '4CAF50', '66BB6A', '81C784', 'A5D6A7', 'C8E6C9'],
+        ['33691E', '558B2F', '689F38', '7CB342', '8BC34A', '9CCC65', 'AED581', 'C5E1A5', 'DCEDC8'],
+        ['827717', '9E9D24', 'AFB42B', 'C0CA33', 'CDDC39', 'D4E157', 'DCE775', 'E6EE9C', 'F0F4C3'],
+        ['F57F17', 'F9A825', 'FBC02D', 'FDD835', 'FFEB3B', 'FFEE58', 'FFF176', 'FFF59D', 'FFF9C4'],
+        //['FF6F00', 'FF8F00', 'FFA000', 'FFB300', 'FFC107', 'FFCA28', 'FFD54F', 'FFE082', 'FFECB3'],
+        ['E65100', 'EF6C00', 'F57C00', 'FB8C00', 'FF9800', 'FFA726', 'FFB74D', 'FFCC80', 'FFE0B2'],
+        ['BF360C', 'D84315', 'E64A19', 'F4511E', 'FF5722', 'FF7043', 'FF8A65', 'FFAB91', 'FFCCBC'],
+        ['3E2723', '4E342E', '5D4037', '6D4C41', '795548', '8D6E63', 'A1887F', 'BCAAA4', 'D7CCC8'],
+        //['212121', '424242', '616161', '757575', '9E9E9E', 'BDBDBD', 'E0E0E0', 'EEEEEE', 'F5F5F5'],
+        ['263238', '37474F', '455A64', '546E7A', '607D8B', '78909C', '90A4AE', 'B0BEC5', 'CFD8DC'],
+    ];
+
+    let c = '';
+    for (let i = 0 ; i < colors.length; i++) {
+        c += '<tr>';
+        for (let j = 0; j < colors[i].length; j++) {
+            c += `<th class="color_name" style="width:16px;height:16px;background:#${colors[i][j]};"></th>`;
+        }
+        c += '</tr>';
+    }
+
     $('body').append(`
-        <div id="color_box" style="width:180px;height:203px;filter: drop-shadow(0px 0px 4px rgba(0,0,0,0.4));
+        <div id="color_box" style="width:160px;height:361px;filter: drop-shadow(0px 0px 5px rgba(0,0,0,.55));
             position:absolute;left:${x}px;top:${y}px;transform:translate(calc(-50% + 6px),20px);z-index:9;">
             <div class="color_box" style="background:white;width:100%;height:100%;
                 clip-path:polygon(0% 16px, 43% 16px, 50% 0, 57% 16px, 100% 16px, 100% 100%, 0 100%);">
-                <table style="border-collapse:separate;border-spacing:10px 10px;">
+                <table style="border-collapse:separate;border-spacing:2px 2px;">
                     <tr>
-                        <th style="height:5px;"></th>    
+                        <th style="height:14px;"></th>
                     </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#fa697c;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#10316b;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#94aa2a;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#fc7fb2;"></th>
-                    </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#888888;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#c71c56;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#a25016;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#6a3577;"></th>
-                    </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#005b96;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#451e3e;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#f37736;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#ffa700;"></th>
-                    </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#03dac6;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#F50057;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#6A1B9A;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#006064;"></th>
-                    </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#009688;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#9CCC65;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#827717;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#C0CA33;"></th>
-                    </tr>
-                    <tr>
-                        <th class="color_name" style="width:35px;height:20px;background:#78909C;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#F57F17;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#FFA726;"></th>
-                        <th class="color_name" style="width:35px;height:20px;background:#FF5722;"></th>
-                    </tr>
+                    ${c}
                 </table>
+                <div class="custom_color_box" style="display:flex;margin-top:6px;">
+                    <input class="custom_color_input" type="text" placeholder="Hexcolor"
+                        style="width:98px;margin-left:7px;padding:2px;">
+                    <div class="custom_color_button"
+                        style="cursor:pointer;text-align:center;padding-top:5px;margin-left:8px;font-size:12px;background:rgb(3,166,133);color:white;width:40px;">Set</div>
+                </div>
             </div>
-            </div>
+        </div>
     `);
 
     $('body').on('click', '.color_name', function(e) {
         let color = $(this).css('background-color');
-        tagClickedForColor.css('background-color', color);
+        changeTagColor(color, $('#color_box'));
+    });
 
-        $('#color_box').remove();
+    $('.custom_color_button').on('click', function(e) {
+        console.log('Fanatic!!!');
 
-        let tag = tagClickedForColor.find('.upper_section .tag_value').text().trim();
-        for (let i = 0; i < tags.length; i++) {
-            if (tags[i].name == tag) {
-                tags[i].color = color;
-                break;
-            }
+        let color = $('.custom_color_input').val().trim();
+        if (color.indexOf('#') < 0) color = '#' + color;
+
+        if (/^#([0-9A-F]{3}){1,2}$/i.test(color)) {
+            changeTagColor(color, $('#color_box'));
+        } else {
+            console.log('Invalid hex color!!');
         }
-
-        chrome.storage.local.set({ tags });
-
-        // Send tag to mesenger content.js for adding option tag to the select tag
-        chrome.tabs.getAllInWindow(null, function(tabs) {
-            // Find messenger tab
-            for (let i = 0; i < tabs.length; i++) {
-                if (tabs[i].title == 'Messenger') {
-                    chrome.tabs.sendMessage(tabs[i].id, { action: 'changeTagColor', tag, color });
-                    break;
-                }                        
-            }
-        });
-
-        
-        $.ajax({
-            type: 'POST',
-            url: backendUrl + '/api/user/changeTagColor',
-            data: {
-                tag, color
-            },
-            beforeSend: function(request) {
-                request.setRequestHeader("x-user-auth-token", userAuthToken);
-            },
-            success: function(data, textStatus, request) {
-                console.log(data);
-            },
-            error: function (request, textStatus, errorThrown) {
-                console.log(request);
-            }
-        });
     });
 });
 
+function changeTagColor(color, $colorBox) {
+    tagClickedForColor.css('background-color', color);
+
+    $colorBox.remove();
+
+    let tag = tagClickedForColor.find('.upper_section .tag_value').text().trim();
+    for (let i = 0; i < tags.length; i++) {
+        if (tags[i].name == tag) {
+            tags[i].color = color;
+            break;
+        }
+    }
+
+    chrome.storage.local.set({ tags });
+
+    // Send tag to mesenger content.js for adding option tag to the select tag
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        // Find messenger tab
+        for (let i = 0; i < tabs.length; i++) {
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'changeTagColor', tag, color });
+                break;
+            }
+        }
+    });
+
+    let t1 = tagClickedForColor.find('.tag_value').text().trim();
+    let t2 = $('.tag_heading_for_friend_list').text().trim();
+    t2 = t2.substring(1, t2.length - 1);
+    if (t1 == t2) {
+        tagClickedForColor.find('.tag_value').trigger('click');
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/changeTagColor',
+        data: {
+            tag, color
+        },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data);
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log(request);
+        }
+    });
+}
 
 window.addEventListener('click', function(e) {
     colorBox = document.getElementById('color_box');
@@ -553,7 +865,7 @@ window.addEventListener('click', function(e) {
         let colorContainer = $('#color_box');
         colorContainer.css('display', 'none');
     }
-}); 
+});
 
 $('.tag_box').on('click', '.tag_remove', function(e) {
     console.log('remove');
@@ -599,7 +911,7 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
         }
     });
 
-    
+
     // Find and remove tag from tag array
     for (let i = 0; i < tags.length; i++) {
         if (tags[i].name == tag) {
@@ -612,14 +924,14 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
     // Save the tag to local stoarge
     chrome.storage.local.set({ tags });
 
-    // 
+    //
     chrome.tabs.getAllInWindow(null, function(tabs) {
         // Find messenger tab
         for (let i = 0; i < tabs.length; i++) {
             if (tabs[i].title == 'Messenger') {
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'removeTag', tag, tags });
                 break;
-            }                        
+            }
         }
     });
 });
@@ -627,6 +939,7 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
 $('.tag_box').on('click', '.tag_edit', function(e) {
     let tag = $(this).parent().prev().find('.tag_value').text().trim();
     $('#tag_input').val(tag);
+    $('#tag_input').focus();
     $('.tag_button').attr('value', 'Save tag');
 
     for (let i = 0; i < tags.length; i++) {
@@ -645,7 +958,7 @@ $('.tag_box').on('click', '.tag_value', function(e) {
 
     let tag = $(this).text();
     chrome.storage.local.get('lastTagOpened', function(result) {
-        if (result.lastTagOpened != tag) {
+        //if (result.lastTagOpened != tag) {
             chrome.storage.local.set({ lastTagOpened: tag });
 
             // $('.note_box').css('display', 'none');
@@ -659,7 +972,7 @@ $('.tag_box').on('click', '.tag_value', function(e) {
             //     'pointer-events': 'auto',
             //     'background': 'rgb(3, 166, 133)'
             // });
-        }
+        //}
     });
 });
 
@@ -668,7 +981,16 @@ $('.tag_friend_box').on('click', '.friend_chat', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let friendName = $(this).parent().prev().text();
+    let friendName = $(this).parent().prev().find('.friend_name').text();
+    let friendId = '';
+
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].name == friendName) {
+            friendId = friendList[i].id;
+        }
+    }
+
+    //chrome.tabs.update({ url: "https://facebook.com/messages/t/" + friendId });
 
     $('.tag_friend_item').removeClass('friend_active');
     $(this).parent().parent().parent().addClass('friend_active');
@@ -678,9 +1000,9 @@ $('.tag_friend_box').on('click', '.friend_chat', function(e) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
             if (tabs[i].title == 'Messenger') {
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'selectFriend', friendName });
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'selectFriend', friendName, friendId });
                 break;
-            }               
+            }
         }
     });
 });
@@ -699,7 +1021,8 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
     $('.nav_template').css('cursor', 'pointer');
     $('.nav_message').css('cursor', 'pointer');
 
-    let friendName = $(this).parent().prev().text();
+    let friendName = $(this).parent().prev().find('.friend_name').text().trim();
+    console.log(friendName);
 
     $('.tag_friend_item').removeClass('friend_active');
     $(this).parent().parent().parent().addClass('friend_active');
@@ -707,15 +1030,18 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].name == friendName) {
             let notes = friendList[i].notes;
-            let notesHtml = `<div style="margin-top:8px;font-style:italic;display:none;">Make notes for 
-                                <span class="current_friend">${friendName}</span>
+            console.log(notes);
+            let notesHtml = `<div style="margin-top:8px;font-size:14px;font-style:italic;">
+                                <span class="current_friend">Notes for ${friendName}</span>
                             </div>`;
             if (notes != null) {
                 for (let j = 0; j < notes.length; j++) {
-                    notesHtml += 
+                    notesHtml +=
                         `<div class="note" style="display:flex;justify-content:space-between;">
                             <div class="note_value">${notes[j]}</div>
-                            <div class="each_note_action send" style="margin-right:10px;cursor:pointer;"></div>
+                            <div class="each_note_action" style="display:flex;margin-left:6px;">
+                                <i class="fa fa-remove delete_note" style="font-size:16px;cursor:pointer;"></i>
+                            </div>
                         </div>`;
                 }
             }
@@ -767,15 +1093,22 @@ $('.note_box').on('click', '.save_note', function(e) {
     e.stopImmediatePropagation();
 
     let note = $('.note_textarea').val();
-    let friendName = $('.current_friend').text();
+    console.log(note);
+    let friendName = $('.friend_active').find('.friend_name').text().trim();
     $('.note_textarea').remove();
-    $('.notes').append(`<div class="note" style="display:flex;justify-content:space-between;">
-                            <div class="note_value">${note}</div>
-                            <div class="each_note_action send" style="margin-right:10px;cursor:pointer;"></div>
-                        </div>`);
+    $('.notes').append(
+        `<div class="note" style="display:flex;justify-content:space-between;">
+            <div class="note_value">${note}</div>
+            <div class="each_note_action" style="display:flex;margin-left:6px;">
+                <i class="fa fa-remove delete_note" style="cursor:pointer;font-size:16px;"></i>
+            </div>
+        </div>`
+    );
 
+    console.log(friendName);
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].name == friendName) {
+            console.log('aaaa');
             if (friendList[i].notes == null) {
                 friendList[i].notes = [];
                 friendList[i].notes.push(note);
@@ -785,6 +1118,8 @@ $('.note_box').on('click', '.save_note', function(e) {
             break;
         }
     }
+
+    console.log(friendList);
 
     chrome.storage.local.set({ friendList });
 
@@ -812,10 +1147,58 @@ $('.note_box').on('click', '.save_note', function(e) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
-            
+            console.log(data);
         },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error adding note to friend');
+            console.log(request);
+        }
+    });
+});
+
+$('.note_box').on('click', '.delete_note', function(e) {
+    console.log('Note delete');
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let note = $(this).parent().prev().text().trim();
+    let friendName = $('.notes:first-child').find('.current_friend').text().trim();
+    $(this).parent().parent().remove();
+
+    console.log(friendList);
+    console.log(friendName);
+
+
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].name == friendName) {
+            let notes = friendList[i].notes;
+            console.log(notes);
+            for (let j = 0; j < notes.length; j++) {
+                if (notes[j] == note) {
+                    console.log(note);
+                    friendList[i].notes.splice(j, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    chrome.storage.local.set({ friendList });
+
+    $.ajax({
+        type: 'POST',
+        url: backendUrl + '/api/user/removeNoteFromFriend',
+        data: {
+            friendName,
+            note,
+        },
+        beforeSend: function(request) {
+            request.setRequestHeader("x-user-auth-token", userAuthToken);
+        },
+        success: function(data, textStatus, request) {
+            console.log(data);
+        },
+        error: function (request, textStatus, errorThrown) {
+            console.log(request);
         }
     });
 });
@@ -852,7 +1235,7 @@ $('.message_box').on('click', '.send_message', function(e) {
             if (tabs[i].title == 'Messenger') {
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'sendMessage', message });
                 break;
-            }               
+            }
         }
     });
 });
@@ -862,10 +1245,13 @@ $('.message_box').on('click', '.delete_message', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let template = $('.messages').find('.template_name').text();
+    let template = $('.template_name_for_message').text().trim();
+    console.log(template);
     let key = generateKey(template);
 
     let message = $(this).parent().prev().text();
+
+    console.log(message);
     $(this).parent().parent().remove();
     for (let i = 0; i < messages[key].length; i++) {
         if (messages[key][i] == message) {
@@ -882,10 +1268,9 @@ $('.message_box').on('click', '.delete_message', function(e) {
     chrome.tabs.getAllInWindow(null, function(tabs) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
-            if (tabs[i].title == 'Messenger') {
+            if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteMessage', template, message });
-                break;
-            }               
+            }
         }
     });
 
@@ -893,14 +1278,14 @@ $('.message_box').on('click', '.delete_message', function(e) {
         type: 'POST',
         url: backendUrl + '/api/user/removeMessageFromTemplate',
         data: {
-            template, 
+            template,
             message,
         },
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
-            console.log(data.data);    
+            console.log(data.data);
         },
         error: function (request, textStatus, errorThrown) {
             console.log('Error adding message to friend');
@@ -966,7 +1351,7 @@ $('.message_box').on('click', '.save_message', function(e) {
         </div>`
     );
 
-    let template = $('.messages').find('.template_name').text();
+    let template = $('.messages').find('.template_name_for_message').text().trim();
     console.log('template', templates);
     let key = generateKey(template)
     if (messages[key] == null) messages[key] = [];
@@ -994,10 +1379,9 @@ $('.message_box').on('click', '.save_message', function(e) {
     chrome.tabs.getAllInWindow(null, function(tabs) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
-            if (tabs[i].title == 'Messenger') {
+            if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'newMessage', template, message });
-                break;
-            }                        
+            }
         }
     });
 
@@ -1005,17 +1389,17 @@ $('.message_box').on('click', '.save_message', function(e) {
         type: 'POST',
         url: backendUrl + '/api/user/addMessageToTemplate',
         data: {
-            template, 
+            template,
             message,
         },
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
-            console.log(data.data);    
+            console.log(data);
         },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error adding message to friend');
+            console.log(request);
         }
     });
 });
@@ -1051,16 +1435,16 @@ $('.go_to_template').on('click', function(e) {
         $('.nav_template').css('display', 'block');
         $('.template_box').css('display', 'block');
     }
-}); 
+});
 
-$('.template_box').on('click', '.template_value', function(e) {
+$('.template_box').on('click', '.template', function(e) {
     console.log('template value clicked');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let template = $(this).text();
+    let template = $(this).find('.template_value').text().trim();
 
-    
+
     $('.nav_template').css('display', 'none');
     $('.template_box').css('display', 'none');
     $('.nav_message').css('display', 'flex');
@@ -1070,13 +1454,18 @@ $('.template_box').on('click', '.template_value', function(e) {
     let templateMessage = messages[generateKey(template)] || [];
     console.log(templateMessage);
 
-    $('.messages').append(`<div class="template_name" style="display:none;">${template}</div>`);
+    $('.messages').append(`<div class="template_name_for_message" style="display:none;">${template}</div>`);
 
     let templateMessageHtml = '';
     for (let i = 0; i < templateMessage.length; i++) {
-        templateMessageHtml += 
+        let mes = templateMessage[i];
+        if (mes.indexOf('--template--') > -1)
+            mes = `<img src="${backendUrl + '/temp/' + mes}"
+                    style="width:calc(100% + 6px);margin-top:2px;">`;
+
+        templateMessageHtml +=
         `<div class="message" style="display:flex;justify-content:space-between;">
-            <div class="message_value" style="width:240px;line-height:1.3;">${templateMessage[i]}</div>
+            <div class="message_value" style="width:240px;line-height:1.3;">${mes}</div>
             <div class="each_message_action" style="cursor:pointer;">
                 <i class="fa fa-paper-plane send_message" style="font-size:15px;margin-right:10px;"></i>
                 <i class="fa fa-remove delete_message" style="font-size:16px;"></i>
@@ -1085,6 +1474,57 @@ $('.template_box').on('click', '.template_value', function(e) {
     }
 
     $('.messages').append(templateMessageHtml);
+    $('.messages').sortable({
+        cursor: 'move',
+        delay: 100,
+        start: function(event, ui) {
+            let startPos = ui.item.index();
+            ui.item.data('m_start_pos', startPos);
+            console.log(startPos);
+        },
+        update: function(event, ui) {
+            let i1 = ui.item.data('m_start_pos') - 1;
+            let i2 = ui.item.index() - 1;
+
+            let template = $('.template_name_for_message').text().trim();
+            let key = generateKey(template);
+
+            let m = messages[key];
+            let tmp = m[i1];
+            m.splice(i1, 1);
+            m.splice(i2, 0, tmp);
+
+            chrome.storage.local.set({ [key]: m });
+
+            chrome.tabs.getAllInWindow(null, function(tabs) {
+                for (let i = 0; i < tabs.length; i++) { // Find messenger tab
+                    if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
+                        chrome.tabs.sendMessage(tabs[i].id,
+                            { action: 'changeMessageOrder', template, i1, i2 });
+                        break;
+                    }
+                }
+            });
+
+            // Send data to background for reordering template in the server
+            $.ajax({
+                type: 'POST',
+                url: backendUrl + '/api/user/changeMessageOrder',
+                data: {
+                    template, i1, i2,
+                },
+                beforeSend: function(request) {
+                    request.setRequestHeader("x-user-auth-token", userAuthToken);
+                },
+                success: function(data, textStatus, request) {
+                    console.log(data);
+                },
+                error: function (request, textStatus, errorThrown) {
+                    console.log(request);
+                }
+            });
+        }
+    });
 
     $('.save_message').css({
         'pointer-events': 'none',
@@ -1160,10 +1600,9 @@ $('.template_box').on('click', '.save_template', function(e) {
     chrome.tabs.getAllInWindow(null, function(tabs) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
-            if (tabs[i].title == 'Messenger') {
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'newTemplate', template });
-                break;
-            }                        
+            if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'addTemplate', template });
+            }
         }
     });
 
@@ -1221,10 +1660,9 @@ $('.template_box').on('click', '.delete_template', function(e) {
     chrome.tabs.getAllInWindow(null, function(tabs) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
-            if (tabs[i].title == 'Messenger') {
+            if (tabs[i].title == 'Messenger' || tabs[i].title === 'Pepper messages') {
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteTemplate', template });
-                break;
-            }               
+            }
         }
     });
 
@@ -1259,6 +1697,33 @@ $('body').on('input', 'textarea', function() {
     this.style.height = (this.scrollHeight) + 'px';
 });
 
+
+$('.select_asbox').click(() => {
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'switchSide' });
+                break;
+            }
+        }
+    });
+});
+
+$('#select_checkbox').change(function(e) {
+    // Send message to content.js to disable the extension
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'switchSide' });
+                break;
+            }
+        }
+    });
+});
+
 $('.chat_box').click(() => {
     chrome.tabs.create({
         url: chrome.runtime.getURL("window.html")
@@ -1272,6 +1737,12 @@ $('.logout_box').click(() => {
         $('.tag_box').html('');
         openLogin();
 
+        $('.tag_box').html('');
+        $('.tag_friend_box').html('');
+        $('.templates').html('');
+        $('.messages').html('');
+        $('.notes').html('');
+
         // Send message to content.js to disable the extension
         chrome.tabs.getAllInWindow(null, function(tabs) {
             for (let i = 0; i < tabs.length; i++) {
@@ -1281,7 +1752,7 @@ $('.logout_box').click(() => {
                 }
                 if (tabs[i].title == 'Pepper messages') {
                     chrome.tabs.remove(tabs[i].id);
-                }                   
+                }
             }
         });
     });

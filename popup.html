@@ -6,10 +6,21 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
+    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.structure.css">
     <link rel="stylesheet" type="text/css" href="popup.css">
     <link rel="stylesheet" href="colorPicker.css">
 </head>
 <body style="width:750px;height:550px;">
+
+    <div class="overlay">
+        <div class="overlay_content_box">
+            <div class="oberlay_content">
+                
+            </div>
+        </div>
+    </div>
 
     <div class="signup_box" style="display:none;">
         <div class="primary-text signup_text">Signup to Messenger Extension</div>
@@ -39,6 +50,9 @@
 
     <div class="main_content" style="display:none">
         <div class="main_action">
+            <div class="select_box">
+                <input id="select_checkbox" type="checkbox" class=".select_checkbox">
+            </div>
             <div class="chat_box">Messages</div>
             <div class="logout_box">Logout</div>
         </div>
@@ -50,24 +64,26 @@
                 <input class="primary-button tag_button" type="submit" value="Add tag">
             </form>
         </div>
-        <div class="tag_box">
-            
+
+        <div class="tag_outer">
+        <div class="tag_box ui-widget-content" style="width:100%;height:100%;"></div>
         </div>
+
         <div class="tag_action">
             <div class="tag_friend_box"></div>
             <div class="side_box">
                 <div class="nav">
-                    <!-- <div class="nav_item nav_item_selected nav_template">Templates</div>
+                    <div class="nav_item nav_item_selected nav_template">Templates</div>
                     <div class="nav_item nav_item_selected nav_message">
                         <div class="go_to_template">
                             <i class="fa fa-arrow-left" style="font-size:16px;"></i>
                         </div>
                         <div class="nav_message_menu">Message</div>
-                    </div> -->
-                    <div class="nav_item nav_item_selected nav_note">Notes</div>
+                    </div>
+                    <div class="nav_item nav_item_unselected nav_note">Notes</div>
                 </div>
                 <div class="side_section">
-                    <!-- <div class="message_box">
+                    <div class="message_box">
                         <div class="messages"></div>
                         <div class="message_action">
                             <div class="secondary-button add_message">Add</div>
@@ -82,7 +98,7 @@
                             <div class="secondary-button save_template">Save</div>
                             <div class="secondary-button cancel_template">Cancel</div>
                         </div>
-                    </div> -->
+                    </div>
                     <div class="note_box">
                         <div class="notes"></div>
                         <div class="note_action">
@@ -96,8 +112,9 @@
         </div>
     </div>
     
-    <script src="jquery.js"></script>   
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery-ui.js"></script>
     <script type="text/javascript" src="colorPicker.js"></script> 
-    <script src="popup.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
 </body>
 </html>

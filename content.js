@@ -22,10 +22,11 @@ var fb_ul_li_selector = "ul[aria-label='" + conversionListText + "' i] li";
 var fb_list_selectors = 'ul[aria-label="' + conversionListText + '" i] li:not([fb_user_id]';
 
 
-const backendUrl = 'http://localhost:4400';
-//const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://localhost:4400';
+const backendUrl = 'http://13.232.210.23:4400';
 
 let userAuthToken;
+let sideBox = true;
 let friendsCount = 0;
 let friendList = [];
 let tags = [];
@@ -33,12 +34,16 @@ let templates = [];
 let messages = [];
 let currentFriendSelected = '';
 
+let imageToBeSend;
+
 // Load data
-chrome.storage.local.get(['userAuthToken', 'friendList', 'tags', 'templates'], function(result) {
+chrome.storage.local.get(['userAuthToken', 'sideBox', 'friendList', 'tags', 'templates'], function(result) {
     userAuthToken = result.userAuthToken;
     if (userAuthToken != null && userAuthToken != '') {
         if (result.friendList != null)
             friendList = result.friendList;
+        if (result.sideBox != null)
+            sideBox = result.sideBox;
         if (result.tags != null)
             tags = result.tags;
         if (result.templates != null)
@@ -105,7 +110,7 @@ chrome.runtime.onMessage.addListener(
             break;
             case 'selectFriend':
                 console.log('selectFriend');
-                selectFriend(message.friendName);
+                selectFriend(message.friendName, message.friendId);
             break;
             case 'sendMessage':
                 console.log('sendMessage');
@@ -139,9 +144,97 @@ chrome.runtime.onMessage.addListener(
                 console.log('changeTagColor');
                 changeTagColor(message.tag, message.color);
             break;
+            case 'switchSide': 
+                console.log('Switch side');
+                switchSide();
+            break;
+            case 'changeSelect':
+                console.log('change seelct');
+                changeSelect(message.id, message.tag);
+            break;
+            case 'changeTemplateOrder':
+                console.log('Change template order');
+                changeTemplateOrder(message.i1, message.i2);
+            break;
+            case 'changeMessageOrder':
+                console.log('Change message order');
+                changeMessageOrder(message.template, message.i1, message.i2);
+            break;
         }
     }
 );
+
+function changeMessageOrder(template, i1, i2) {
+    if (section == 'message') {
+        let tt = $('.messages .template_name').text().trim();
+        if (template === tt) {
+            let $i1 = $(`.side_message_box .messages ul li:eq(${i1})`);
+            let $i2 = $(`.side_message_box .messages ul li:eq(${i2})`);
+
+            if (i1 < i2) {
+                $i2.after($i1);
+            } else {
+                $i2.before($i1);
+            }
+        }
+    }
+
+    let key = generateKey(template);
+
+    let m = messages[key];
+    let tmp = m[i1];
+    m.splice(i1, 1);
+    m.splice(i2, 0, tmp);
+
+    messages[key] = m;
+}
+
+function changeTemplateOrder(i1, i2) {
+    let $i1 = $(`.side_message_box .templates ul li:eq(${i1})`);
+    let $i2 = $(`.side_message_box .templates ul li:eq(${i2})`);
+
+    if (i1 < i2) {
+        $i2.after($i1);
+    } else {
+        $i2.before($i1);
+    }
+
+    let tmp = templates[i1];
+    templates.splice(i1, 1);
+    templates.splice(i2, 0, tmp);
+
+    console.log(templates);
+}
+
+function changeSelect(id, tag) {
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].id == id) {
+            friendList[i].tag = tag;
+            break;
+        }
+    }
+
+    $('#select-' + id).val(tag);
+    $('#select-' + id).trigger('change');
+}
+
+function switchSide() {
+    if (sideBox == true) {
+        sideBox = false;
+        //$('.tag_select').css('display', 'none');
+        $('.tag_select').remove();
+    } else {
+        sideBox = true;
+        console.log('Onnn!');
+        //$('.tag_select').css('display', 'block');
+        let $chatList = $chatBox.find('li._5l-3 ._1qt5:not("._6zkd")');
+
+        $chatList.each(function() {
+            addSelectToFriend($(this));
+        });
+    }
+    chrome.storage.local.set({ sideBox });
+}
 
 function changeTagColor(tag, color) {
     //console.log(tag + ", " + color);
@@ -208,12 +301,12 @@ function editTag(tag, oldTag) {
 function newTemplate(template) {
     templates.push(template);
 
-    $('.templates').append(`
-        <div class="template">
+    $('.templates ul').append(`
+        <li class="template">
             <div class="template_value" style="cursor:pointer;padding:5px 8px 5px 8px;font-size:15px;">
                 ${template}
             </div>
-        </div>`
+        </li>`
     );
 
     $('.template_value').on('click', function(e) {
@@ -242,8 +335,7 @@ function newTemplate(template) {
                 </div>
                 <div class="message_action" 
                 style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
-                        style="width:100%;height:100%;cursor:pointer;">
+                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
                 </div>
             </div>`;
         }
@@ -359,7 +451,7 @@ function setFriendListClickListener() {
 }
 
 let sideMessageBoxOpen = false;
-let section = '';
+let section = ''; // 'message', 'template'
 function setSideMessageBox() {
     $('body').css('overflow', 'hidden');
     let sideMessageSectionStyle = generateStyleCss({
@@ -378,6 +470,8 @@ function setSideMessageBox() {
         top: '15vh',
         'box-shadow': 'rgba(59, 59, 59, 0.41) 0px 3px 10px',
         'z-index': '9999',
+        //'padding-top': '14px',
+        //'padding-left': '14px',
     });
     let sideMessageBoxStyle = generateStyleCss({
         width: '300px',
@@ -398,6 +492,7 @@ function setSideMessageBox() {
     const sideMessageBox = `
     <link rel="stylesheet" 
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
         .templates::-webkit-scrollbar,
         .messages::-webkit-scrollbar {
@@ -462,6 +557,7 @@ function setSideMessageBox() {
     </style>
     <div class="side_message_section" style="${sideMessageSectionStyle}" disabled>
         <div class="side_message_button" style="${sideMessageButtonStyle}">
+            <i class="fa fa-arrow-left" style="font-size:28px;line-height:45px;padding-left:9px;"></i>
         </div>
         <div class="side_message_box" style="${sideMessageBoxStyle}">
             <div class="heading_name" 
@@ -478,11 +574,19 @@ function setSideMessageBox() {
             $('.side_message_box').css({
                 right: '0'
             });
+            $(this)
+                .find('.fa-arrow-left')
+                .removeClass('fa-arrow-left')
+                .addClass('fa-arrow-right');
             sideMessageBoxOpen = true;
         } else {
             $('.side_message_box').css({
                 right: '-332px'
             });
+            $(this)
+                .find('.fa-arrow-right')
+                .removeClass('fa-arrow-right')
+                .addClass('fa-arrow-left');
             sideMessageBoxOpen = false;
         }
     }); 
@@ -495,14 +599,51 @@ function setSideMessageBox() {
     let templateHtml = '';
     for (let i = 0; i < templates.length; i++) {
         templateHtml += `
-        <div class="template">
+        <li class="template">
             <div class="template_value" style="cursor:pointer;padding:5px 8px 5px 8px;font-size:15px;">
                 ${templates[i]}
             </div>
-        </div>`;
+        </li>`;
     }
 
-    $('.templates').append(templateHtml);
+    $('.templates').append('<ul class="sortableTemplate">' + templateHtml + '</ul>');
+    $('.sortableTemplate').sortable({
+        cursor: 'move',
+        start: function(event, ui) {
+            let startPos = ui.item.index();
+            ui.item.data('start_pos', startPos);
+            console.log(startPos);
+        },
+        update: function(event, ui) {
+            let i1 = ui.item.data('start_pos');
+            let i2 = ui.item.index();
+            console.log(i2);
+
+            let tmp = templates[i1];
+            templates.splice(i1, 1);
+            templates.splice(i2, 0, tmp);
+
+            chrome.storage.local.set({ templates });
+
+            chrome.tabs.getAllInWindow(null, function(tabs) {
+                for (let i = 0; i < tabs.length; i++) {
+                    if (tabs[i].title == 'Pepper messages') { // Find pepper tab
+                        chrome.tabs.sendMessage(tabs[i].id, 
+                            { action: 'changeTemplateOrder', i1, i2 });
+                        break;
+                    }                        
+                }
+            });
+
+            // Send data to background for reordering tenplate in the server
+            chrome.runtime.sendMessage({ 
+                type: 'reorderTemplate', 
+                i1, 
+                i2,
+                userAuthToken,
+            }); 
+        }
+    });
 
     $('.template_value').on('click', function(e) {
         e.stopPropagation();
@@ -517,7 +658,7 @@ function setSideMessageBox() {
                 <div class="back_to_template" style="margin-right:12px;cursor:pointer;">
                     <i class="fa fa-arrow-left" style="font-size:16px;"></i>
                 </div>
-                <div style="font-weight:bold;">${template}</div>
+                <div class="template_name_for_message" style="font-weight:bold;">${template}</div>
             </div>
             <div>
                 <!-- <i class="fa fa-image template_image" style="font-size:18px;cursor:pointer;"></i> -->
@@ -532,25 +673,65 @@ function setSideMessageBox() {
             if (messages[key][i].indexOf('--template--') < 0)
                 main = messages[key][i];
             else 
-                main = `<img src="${'http://localhost:4400/temp/' + messages[key][i]}" 
-                    style="width:calc(100% + 6px);margin-top:2px;">`;
+                main = `<img class="message_image" src="${backendUrl + '/temp/' + messages[key][i]}" 
+                    style="width:calc(100% + 6px);margin-top:2px;" crossorigin="anonymous">`;
 
             messageHtml = messageHtml + `
-            <div class="message">
+            <li class="message">
                 <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">` + 
                     main + 
                 `</div>
                 <div class="message_action" 
                 style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <!-- <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
-                        style="width:100%;height:100%;cursor:pointer;"> -->
                     <i class="fa fa-paper-plane send_message" style="font-style:16px;cursor:pointer;"></i>
                 </div>
-            </div>`;
+            </li>`;
         }
 
 
-        $('.messages').html(messageHtml);
+        $('.messages').html('<ul class="messageSortable">'+ messageHtml + '</ul>');
+        $('.messageSortable').sortable({
+            cursor: 'move',
+            delay: 100,
+            start: function(event, ui) {
+                let startPos = ui.item.index();
+                ui.item.data('m_start_pos', startPos);
+                console.log(startPos);
+            },
+            update: function(event, ui) {
+                let i1 = ui.item.data('m_start_pos') - 1;
+                let i2 = ui.item.index() - 1;
+
+                let template = $('.template_name_for_message').text().trim();
+                let key = generateKey(template);
+    
+                let m = messages[key];
+                let tmp = m[i1];
+                m.splice(i1, 1);
+                m.splice(i2, 0, tmp);
+    
+                chrome.storage.local.set({ [key]: m });
+    
+                chrome.tabs.getAllInWindow(null, function(tabs) {
+                    for (let i = 0; i < tabs.length; i++) {
+                        if (tabs[i].title === 'Pepper messages') { // Find pepper tab
+                            chrome.tabs.sendMessage(tabs[i].id, 
+                                { action: 'changeMessageOrder', template, i1, i2 });
+                            break;
+                        }                        
+                    }
+                });
+
+                // Send data to background for reordering tenplate in the server
+                chrome.runtime.sendMessage({ 
+                    type: 'reorderMessage',
+                    template, 
+                    i1, 
+                    i2,
+                    userAuthToken,
+                }); 
+            }
+        });
         $('.templates').css('display', 'none');
         $('.messages').css('display', 'block');
 
@@ -559,14 +740,20 @@ function setSideMessageBox() {
             e.stopImmediatePropagation();
 
             let message = $(this).parent().prev().text().trim();
-            if (message == null || message == '') 
+            if (message == null || message == '') {
                 message = $(this).parent().prev().find('img').attr('src');
+                imageToBeSend = $(this).parent().prev().find('img').get(0);
+            }
 
             sendMessage(message);
         });
 
         $('.back_to_template').on('click', function(e) {
-            $('.heading_name').html(`<div style="font-weight:bold;margin-bottom:12px;">Templates</div>`);
+            $('.heading_name').html(`
+                <div style="font-weight:bold;">
+                    Templates
+                </div>
+            `);
             $('.messages').css('display', 'none');
             $('.templates').css('display', 'block');
             section = 'template';
@@ -631,22 +818,20 @@ function templateValueClickListener(e) {
 function newMessage(template, message) {
     console.log('new messageeeee');
     let key = generateKey(template);
+    if (messages[key] == null) messages[key] = [];
     messages[key].push(message);
 
     if (section == 'message' && $('.template_name').text().trim() == template) {
-        console.log('in the section');
         $('.messages').append(`
-            <div class="message">
+            <li class="message" style="margin-top:12px;">
                 <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
                     ${message}
                 </div>
                 <div class="message_action"  
                     style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <!-- <img class="send_message" src="${chrome.runtime.getURL("images/send.png")}" 
-                        style="width:100%;height:100%;cursor:pointer;"> -->
                     <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
                 </div>
-            </div>`
+            </li>`
         );
     }
 }
@@ -658,6 +843,7 @@ function generateKey(str) {
 
 let optionStyle = `color:white;padding:4px;`;
 function addSelectToFriend(item) {
+    
     let friendName = item.find('span').text();
 
     $a = item.closest('a._2il3');
@@ -698,13 +884,17 @@ function addSelectToFriend(item) {
     }
 }
 
-let selectStyle = `width:100px;margin-right:4px;margin-left:4px;appearance:none;`;
+
 function appendSelectAndAddListener(item, options, o) {
+    let selectStyle = `width:100px;margin-right:4px;margin-left:4px;appearance:none;`;
     let s = '';
     if (o.color != null && o.color != '') s = `background:${o.color};color:white;`; 
 
-    item.html(item.html() + 
-        `<select id="select-${o.id.replace(/\./g, 'a')}" class="tag_select" style="${selectStyle}${s}">
+    if (sideBox) selectStyle += 'display:block;';
+    else selectStyle += 'display:none;';
+
+    item.html(item.html() + //o.id.replace(/\./g, 'a')
+        `<select id="select-${o.id}" class="tag_select" style="${selectStyle}${s}">
             <option>...</option>
             ${options}
         </select>`);
@@ -817,16 +1007,22 @@ function logout() {
     $('.side_message_section').remove();
 }
 
-function selectFriend(friendName) {
+function selectFriend(friendName, friendId) {
+    console.log('using tabs update', friendId);
+    //chrome.tabs.update({ url: "https://facebook.com/messages/t/" + friendId });
+    window.location.replace("https://facebook.com/messages/t/" + friendId);
+    return;
+
     $chatList.each(function() {
         if ($(this).find('span').text() == friendName) {
-            console.log('name found');
-            console.log($(this));
             $(this).trigger('click');
             $(this).mclick();
             return false;
         }
     });
+
+
+
 }
 
 async function loadBlob(fileName) {
@@ -856,49 +1052,60 @@ async function sendMessage(templateMessage) {
 
         console.log(templateMessage);
         if (templateMessage.indexOf('--template--') >= 0) {
+            let c = document.createElement('canvas');
+            //let img = document.querySelector(".message_image");
+            let imgWidth = imageToBeSend.naturalWidth;
+            let imgHeight = imageToBeSend.naturalHeight;
+            c.width = imgWidth;
+            c.height = imgHeight;
+            let ctx = c.getContext("2d");
+            ctx.drawImage(imageToBeSend, 0, 0, imgWidth, imgHeight);
+            let bb = c.toBlob(async (blob) => {
+                console.log(blob);
+                let clipboardItemInput = new ClipboardItem({'image/png': blob});
+                await navigator.clipboard.write([clipboardItemInput]);
+                document.execCommand('paste');
+            }, 'image/png', 0.95);
+
             //let url = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Chrome_Material_Icon-450x450.png';
-            let url = templateMessage;
-            let extension = url.substring(url.lastIndexOf('.') + 1);
-            let blobInput = await loadBlob(url);
-            let mimeType = 'image/' + extension;
-            let obj = {};
-            obj[mimeType] = blobInput;
-            let clipboardItemInput = new ClipboardItem({[blobInput.type]: blobInput});
-            await navigator.clipboard.write([clipboardItemInput]);
-            document.execCommand('paste');
-            return;
-        }
-
-        var evt = new Event('input', { bubbles: true });
-        let input = document.querySelector(selector);
-        input.innerHTML = templateMessage;
-        input.dispatchEvent(evt);
-        $(selector).after('<span data-text="true">' + templateMessage + '</span>');
-
-        let loc = window.location.href;
-        loc = loc.split("/t/");
-        $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").next('li').find('a');
-        $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").prev('li').find('a');
-        let flag = true;
-        if ($next.length > 0) {
-            $next.mclick();
-            flag = true;
+            // let url = templateMessage;
+            // let extension = url.substring(url.lastIndexOf('.') + 1);
+            // let blobInput = await loadBlob(url);
+            // let mimeType = 'image/' + extension;
+            // let obj = {};
+            // obj[mimeType] = blobInput;
+            // let clipboardItemInput = new ClipboardItem({[blobInput.type]: blobInput});
+            // await navigator.clipboard.write([clipboardItemInput]);
+            // document.execCommand('paste');
         } else {
-            $prev.mclick();
-            flag = false;
+            var evt = new Event('input', { bubbles: true });
+            let input = document.querySelector(selector);
+            input.innerHTML = templateMessage;
+            input.dispatchEvent(evt);
+            $(selector).after('<span data-text="true">' + templateMessage + '</span>');
+
+            let loc = window.location.href;
+            loc = loc.split("/t/");
+            $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").next('li').find('a');
+            $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").prev('li').find('a');
+            let flag = true;
+            if ($next.length > 0) {
+                $next.mclick();
+                flag = true;
+            } else {
+                $prev.mclick();
+                flag = false;
+            }
+            setTimeout(function() {
+                let loc1 = window.location.href;
+                loc1 = loc1.split("/t/");
+                $next = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").next('li').find('a');
+                $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
+                if (flag) $prev.mclick();
+                else $next.mclick();
+            }, 100);
         }
-        setTimeout(function() {
-            let loc1 = window.location.href;
-            loc1 = loc1.split("/t/");
-            $next = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").next('li').find('a');
-            $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
-            if (flag) $prev.mclick();
-            else $next.mclick();
-        }, 100);
     } else {
         console.log('Message already typed in the message box');
     }
 }
-
-
-  

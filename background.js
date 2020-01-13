@@ -1,7 +1,7 @@
 console.log('Hello from the background!');
 
-const backendUrl = 'http://localhost:4400';
-//const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://localhost:4400';
+const backendUrl = 'http://13.232.210.23:4400';
 
 // Load user auth token required for requires
 let userAuthToken;
@@ -51,6 +51,51 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
             },
             success: function(data, textStatus, request) {
                 console.log(data);
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
+            }
+        });
+    } else if (message.type == 'reorderTemplate') {
+        console.log('Reorder ');
+
+        let data = {
+            i1: message.i1,
+            i2: message.i2,
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/changeTemplateOrder',
+            data,
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);    
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
+            }
+        });
+    } else if (message.type == 'reorderMessage') {
+        console.log('Reorder message');
+
+        let data = {
+            template: message.template,
+            i1: message.i1,
+            i2: message.i2,
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/changeMessageOrder',
+            data,
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);    
             },
             error: function (request, textStatus, errorThrown) {
                 console.log(request);

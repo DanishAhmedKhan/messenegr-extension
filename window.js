@@ -1,7 +1,7 @@
 // Local development serrver
-let backendUrl = 'http://localhost:4400';
+//let backendUrl = 'http://localhost:4400';
 // Production AWS EC2 server
-//const backendUrl = 'http://13.232.210.23:4400';
+const backendUrl = 'http://13.232.210.23:4400';
 
 let userAuthToken; // User authentication JSON web token
 let templates = [];
@@ -30,7 +30,165 @@ chrome.storage.local.get(['templates', 'userAuthToken'], function(result) {
 
         initialize();
     });
-}); 
+});
+
+chrome.runtime.onMessage.addListener(
+    function(message, sender, sendResponse) {
+        switch(message.action) {
+            case 'changeTemplateOrder':
+                console.log('chnageTemplateOrder');
+                changeTemplateOrder(message.i1, message.i2);
+            break;
+            case 'changeMessageOrder':
+                console.log('chnageMessageOrder');
+                changeMessageOrder(message.template, message.i1, message.i2);
+            break;
+            case 'addTemplate':
+                console.log('addTemplate');
+                addTemplate(message.template);
+            break;
+            case 'deleteTemplate':
+              console.log('deleteTenplate');
+              deleteTemp(message.template);
+            break;
+            case 'newMessage':
+                console.log('new message');
+                newMessage(message.template, message.message);
+            break;
+            case 'deleteMessage':
+                console.log('delete message');
+                deleteMes(message.template, message.message);
+            break;
+        }
+    }
+);
+
+function deleteMes(template, message) {
+    let key = generateKey(template);
+    let m = messages[key];
+
+    for (let i = 0; i < m.length; i++) {
+        if (m[i] == message) {
+            m.splice(i, 1);
+            break;
+        }
+    }
+
+    messages[key] = m;
+
+    let tempSelected = $('.template_selected').find('.template_value').text().trim();
+
+    if (tempSelected == template) {
+        let mess = $('.message');
+        mess.each(function() {
+            let mm = $(this).find('.message_value').text().trim();
+            if (mm == message) {
+                $(this).remove();
+                return false;
+            }
+        });
+    }
+}
+
+function newMessage(template, message) {
+    let key = generateKey(template);
+    if (messages[key] == null) messages[key] = [];
+    messages[key].push(message);
+
+    let tempSelected = $('.template_selected').find('.template_value').text().trim();
+    console.log(tempSelected);
+
+    if (template == tempSelected) {
+        $('.messages').append(`
+            <li class="message">
+                <i class="fa fa-arrows move_button ui-sortable-handle"></i>
+                <div class="message_value">${message}</div>
+                <div class="message_action">
+                    <i class="fa fa-pencil edit_message" style="font-size:14px;margin-right:4px;"></i>
+                    <i class="fa fa-remove delete_message" style="cursor:pointer;"></i>
+                </div>
+            </li>
+        `) ;   
+    }
+}
+
+function deleteTemp(template) {
+    $tmp = $('.template');
+    let tempSelected = $('.template_selected').find('.template_value').text().trim();
+    $tmp.each(function() {
+        let t = $(this).find('.template_value').text().trim();
+        if (template == t) {
+            $(this).remove();
+
+            if (template == tempSelected) {
+                $('.messages').html('');
+            }
+
+            return false;
+        }
+    });
+}
+
+function addTemplate(template) {
+    let templateHtml = `
+        <li class="template immediate_template">
+            <i class="fa fa-arrows move_button"></i>
+            <div class="template_value">
+                ${template}
+            </div>
+            <div class="template_action">
+                <i class="fa fa-pencil edit_template" style="font-size:14px;margin-right:4px;"></i>
+                <i class="fa fa-remove delete_template"></i>
+            </div>
+        </li>
+    `;
+    $('.templates ul').append(templateHtml);
+
+    // Add template to local storage
+    templates.push(template);
+    chrome.storage.local.set({ templates });
+}
+
+function changeMessageOrder(template, i1, i2) {
+    let tt = $('.templates .template_selected').text().trim();
+
+    if (template === tt) {
+        let $i1 = $(`.messages ul li:eq(${i1})`);
+        let $i2 = $(`.messages ul li:eq(${i2})`);
+
+        if (i1 < i2) {
+            $i2.after($i1);
+        } else {
+            $i2.before($i1);
+        }
+    }
+
+    let key = generateKey(template);
+
+    let m = messages[key];
+    let tmp = m[i1];
+    m.splice(i1, 1);
+    m.splice(i2, 0, tmp);
+
+    messages[key] = m;
+}
+
+function changeTemplateOrder(i1, i2) {
+    let $i1 = $(`.templates ul li:eq(${i1})`);
+    let $i2 = $(`.templates ul li:eq(${i2})`);
+
+    if (i1 < i2) {
+        $i2.after($i1);
+    } else {
+        $i2.before($i1);
+    }
+
+    let tmp = templates[i1];
+    templates.splice(i1, 1);
+    templates.splice(i2, 0, tmp);
+
+    console.log(templates);
+}
 
 // Generate object key for a template by replacing all white spaces by '-'
 function generateKey(str) {
@@ -49,10 +207,12 @@ function initialize() {
     for (let i = 0; i < templates.length; i++) {
         templateHtml += `
             <li class="template" id="i-${i}">
+                <i class="fa fa-arrows move_button"></i>
                 <div class="template_value">
                     ${templates[i]}
                 </div>
                 <div class="template_action">
+                    <i class="fa fa-pencil edit_template" style="font-size:14px;margin-right:4px;"></i>
                     <i class="fa fa-remove delete_template"></i>
                 </div>
             </li>
@@ -62,8 +222,9 @@ function initialize() {
     $('.templates').html('<ul id="templateSortable">' + templateHtml + '</ul>');
     console.log(templates);
     $('#templateSortable').sortable({
-        cursor: 'move',
+        //cursor: 'move',
         delay: 100,
+        handle: '.move_button',
         start: function(event, ui) {
             let startPos = ui.item.index();
             ui.item.data('start_pos', startPos);
@@ -80,18 +241,28 @@ function initialize() {
 
             chrome.storage.local.set({ templates });
 
+            // Send message to content.js to disable the extension
+            chrome.tabs.getAllInWindow(null, function(tabs) {
+                for (let i = 0; i < tabs.length; i++) {
+                    if (tabs[i].title == 'Messenger') { // Find messenger tab
+                        chrome.tabs.sendMessage(tabs[i].id, { action: 'changeTemplateOrder', i1, i2 });
+                        break;
+                    }
+                }
+            });
+
             $.ajax({
                 type: 'POST',
                 url: backendUrl + '/api/user/changeTemplateOrder',
                 data: {
-                    i1, 
+                    i1,
                     i2,
                 },
                 beforeSend: function(request) {
                     request.setRequestHeader("x-user-auth-token", userAuthToken);
                 },
                 success: function(data, textStatus, request) {
-                    console.log(data);    
+                    console.log(data);
                 },
                 error: function (request, textStatus, errorThrown) {
                     console.log(request);
@@ -124,6 +295,7 @@ function deleteTemplate(template) {
     }
 
     chrome.storage.local.set({ templates });
+    chrome.storage.local.set({ messages });
 
     // Send message to content.js to delete the template
     chrome.tabs.getAllInWindow(null, function(tabs) {
@@ -131,7 +303,7 @@ function deleteTemplate(template) {
             if (tabs[i].title == 'Messenger') { // Find messenger tab
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteTemplate', template });
                 break;
-            }               
+            }
         }
     });
 
@@ -161,22 +333,91 @@ $('.add_template_button').click(function(e) {
         if (templates[i] == template) {
             console.log('Template with this name already exist');
             // TODO: Display the error message on the overlay
+
+            $('.overlay_view').css({
+                'width': '300px',
+                'height': 'auto',
+            });
+            $('.overlay').css('display', 'block');
+
+            $('.overlay_heading').html(`
+                <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+            `);
+            $('.overlay_text').html(`Template with the name <span style="font-weight:bold;">${templates[i]}</span> already exist.`);
+            $('.overlay_action').html(`
+                <div class="secondary_button action_template_no" style="width:65px;">Cancel</div>
+            `);
+
             return;
         }
     }
 
+    if ($(this).text().trim() == 'Save Template') {
+        let oldTemplate = templateToBeChanged.text().trim();
+        let key = generateKey(oldTemplate);
+        let newKey = generateKey(template);
+
+        let m = messages[key];
+        delete messages[key];
+        messages[newKey] = m;
+        chrome.storage.local.remove(key);
+        chrome.storage.local.set({ [newKey]: m });
+        console.log(messages);
+
+        for (let j = 0; j < templates.length; j++) {
+            if (templates[j] == oldTemplate) {
+                templates[j] = template;
+                chrome.storage.local.set({ templates });
+
+                templateToBeChanged.text(template);
+                break;
+            }
+        }
+
+        // Send message to content.js to add a new template
+        chrome.tabs.getAllInWindow(null, function(tabs) {
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].title == 'Messenger') { // Find messenger tab
+                    chrome.tabs.sendMessage(tabs[i].id, { action: 'newTemplate', template });
+                    break;
+                }
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/addTemplate',
+            data: { template },
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
+            }
+        });
+
+        return false;
+    }
+
     // Add the new template
     let templateHtml = `
-        <li class="template">
+        <li class="template immediate_template">
+            <i class="fa fa-arrows move_button"></i>
             <div class="template_value">
                 ${template}
             </div>
             <div class="template_action">
+                <i class="fa fa-pencil edit_template" style="font-size:14px;margin-right:4px;"></i>
                 <i class="fa fa-remove delete_template"></i>
             </div>
         </li>
     `;
     $('.templates ul').append(templateHtml);
+    $('.immediate_template').trigger('click');
+    $('.immediate_template').removeClass('immediate_templae');
 
     // Add template to local storage
     templates.push(template);
@@ -188,7 +429,7 @@ $('.add_template_button').click(function(e) {
             if (tabs[i].title == 'Messenger') { // Find messenger tab
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'newTemplate', template });
                 break;
-            }                        
+            }
         }
     });
 
@@ -232,16 +473,18 @@ $('.templates').on('click', '.template', function(e) {
             }
             // main = messages[key][i];
         } else {
-            main = `<img src="${'http://localhost:4400/temp/' + messages[key][i]}" 
+            main = `<img src="${backendUrl + '/temp/' + messages[key][i]}"
                 style="width:210px;margin-top:4px;">`;
         }
 
         messageHtml = messageHtml + `
             <li class="message">
-                <div class="message_value">` + 
-                    main + 
+                <i class="fa fa-arrows move_button"></i>
+                <div class="message_value">` +
+                    main +
                 `</div>
                 <div class="message_action">
+                    <i class="fa fa-pencil edit_message" style="font-size:14px;margin-right:4px;"></i>
                     <i class="fa fa-remove delete_message" style="cursor:pointer;"></i>
                 </div>
             </li>
@@ -250,8 +493,9 @@ $('.templates').on('click', '.template', function(e) {
 
     $('.messages').html('<ul id="messageSortable">' + messageHtml + '</ul>');
     $('#messageSortable').sortable({
-        cursor: 'move',
+        //cursor: 'move',
         delay: 100,
+        handle: '.move_button',
         start: function(event, ui) {
             let startPos = ui.item.index();
             ui.item.data('m_start_pos', startPos);
@@ -272,19 +516,27 @@ $('.templates').on('click', '.template', function(e) {
 
             chrome.storage.local.set({ [key]: m });
 
+            chrome.tabs.getAllInWindow(null, function(tabs) {
+                for (let i = 0; i < tabs.length; i++) {
+                    if (tabs[i].title == 'Messenger') { // Find messenger tab
+                        chrome.tabs.sendMessage(tabs[i].id,
+                            { action: 'changeMessageOrder', template, i1, i2 });
+                        break;
+                    }
+                }
+            });
+
             $.ajax({
                 type: 'POST',
                 url: backendUrl + '/api/user/changeMessageOrder',
                 data: {
-                    template,
-                    i1, 
-                    i2,
+                    template, i1, i2,
                 },
                 beforeSend: function(request) {
                     request.setRequestHeader("x-user-auth-token", userAuthToken);
                 },
                 success: function(data, textStatus, request) {
-                    console.log(data);    
+                    console.log(data);
                 },
                 error: function (request, textStatus, errorThrown) {
                     console.log(request);
@@ -297,87 +549,39 @@ $('.templates').on('click', '.template', function(e) {
 $('.templates').on('click', '.delete_template', function(e) {
     let template = $(this).parent().prev().text().trim();
     let key = generateKey(template);
-
-    //if (messages[key] == null) messages[key]
-
-    // Give a warning before deleting a templayte that has one or more message
-    console.log(messages);
-    console.log(key);
-    console.log(messages[key]);
-    if (messages[generateKey(template)].length > 0) {
-        $('.overlay_view').css({
-            'width': '300px',
-            'height': 'auto',
-        });
-        $('.overlay').css('display', 'block');
-
-        $('.overlay_heading').html(`
-            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Warning</span>
-        `);
-        $('.overlay_text').html(`Are you sure you want to delete template <span style="font-weight:bold;">${template}</span>?`);
-        $('.overlay_action').html(`
-            <div class="secondary_button action_template_no" style="width:65px;margin-right:20px;">No</div>
-            <div class="secondary_button action_template_yes" style="width:65px;">Yes</div>
-        `);
-
-        templateToBeDeleted = $(this).parent().parent();
-
-        return false;
-    }
-
-    let $template = $(this).parent().parent();
-    if ($template.hasClass('template_selected')) {
-        $('.messages').html('');
-    }
-    $template.remove();
-
-    // Delete message
-    for (let i = 0; i < templates.length; i++) {
-        if (templates[i] == template) {
-            templates.splice(i, 1);
-            delete messages[generateKey(template)];
-            break;
-        }
-    }
-
-    chrome.storage.local.set({ templates });
-
-    // Send message to content.js to delete template
-    chrome.tabs.getAllInWindow(null, function(tabs) {
-        for (let i = 0; i < tabs.length; i++) {
-            if (tabs[i].title == 'Messenger') { // Find messenger tab
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteTemplate', template });
-                break;
-            }               
-        }
+    $('.overlay_view').css({
+        'width': '300px',
+        'height': 'auto',
     });
+    $('.overlay').css('display', 'block');
 
-    $.ajax({
-        type: 'POST',
-        url: backendUrl + '/api/user/removeTemplate',
-        data: { template },
-        beforeSend: function(request) {
-            request.setRequestHeader("x-user-auth-token", userAuthToken);
-        },
-        success: function(data, textStatus, request) {
-            console.log(data.data);
-        },
-        error: function (request, textStatus, errorThrown) {
-            console.log('Error removing template to friend');
-        }
-    });
+    $('.overlay_heading').html(`
+        <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Warning</span>
+    `);
+    $('.overlay_text').html(`Are you sure you want to delete template <span style="font-weight:bold;">${template}</span>?`);
+    $('.overlay_action').html(`
+        <div class="secondary_button action_template_no" style="width:65px;margin-right:20px;">No</div>
+        <div class="secondary_button action_template_yes" style="width:65px;">Yes</div>
+    `);
+
+    templateToBeDeleted = $(this).parent().parent();
+});
+
+let templateToBeChanged;
+$('.templates').on('click', '.edit_template', function(e) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let template = $(this).parent().prev().text().trim();
+    $('.add_template_input').val(template);
+    $('.add_template_input').focus();
+
+    templateToBeChanged = $(this).parent().prev();
+    $('.add_template_button').text('Save Template');
 });
 
 $('.save_message').on('click', function(e) {
     let message = $('.message_textarea').val().trim();
-    // let regex = new RegExp("([a-zA-Z0-9]+://)?([a-zA-Z0-9_]+:[a-zA-Z0-9_]+@)?([a-zA-Z0-9.-]+\\.[A-Za-z]{2,4})(:[0-9]+)?(/.*)?")
-    // let match = regex.exec(message);
-    // console.log(match);
-    // if (match != null) {
-    //     let i1 = match.index;
-    //     let i2 = message.indexOf(i1, ' ');
-        
-    // }
 
     let $template = $('.template_selected');
     if ($template.length == 0) {
@@ -390,6 +594,47 @@ $('.save_message').on('click', function(e) {
     let template = $template.find('.template_value').text().trim();
     let key = generateKey(template);
 
+    if ($('.save_message').text().trim() == 'Save') {
+        let oldMessage = messageToBeChanged.text().trim();
+
+        messageToBeChanged.text(message);
+
+        for (let j = 0; j < messages[key].length; j++) {
+            if (messages[key][j] == oldMessage) {
+                messages[key][j] = message;
+                break;
+            }
+        }
+
+        console.log(messages);
+
+        chrome.storage.local.set({ [key]: messages[key] });
+
+        $('.save_message').text('Add');
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/changeMessage',
+            data: {
+                index: messageToBeChanged.parent().index(),
+                template,
+                newMessage: message,
+
+            },
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
+            }
+        });
+
+        return false;
+    }
+
     if (messages[key] == null) messages[key] = [];
     messages[key].push(message);
 
@@ -399,10 +644,12 @@ $('.save_message').on('click', function(e) {
 
     let messageHtml = `
         <li class="message">
+            <i class="fa fa-arrows move_button"></i>
             <div class="message_value">
                 ${message}
             </div>
             <div class="message_action">
+                <i class="fa fa-pencil edit_message" style="font-size:14px;margin-right:4px;"></i>
                 <i class="fa fa-remove delete_message" style="cursor:pointer;"></i>
             </div>
         </li>
@@ -420,7 +667,7 @@ $('.save_message').on('click', function(e) {
             if (tabs[i].title == 'Messenger') { // Find messenger tab
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'newMessage', template, message });
                 break;
-            }                        
+            }
         }
     });
 
@@ -428,19 +675,32 @@ $('.save_message').on('click', function(e) {
         type: 'POST',
         url: backendUrl + '/api/user/addMessageToTemplate',
         data: {
-            template, 
+            template,
             message,
         },
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
-            console.log(data);    
+            console.log(data);
         },
         error: function (request, textStatus, errorThrown) {
             console.log(request);
         }
     });
+});
+
+let messageToBeChanged;
+$('.messages').on('click', '.edit_message', function(e) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let message = $(this).parent().prev().text().trim();
+    $('.message_textarea').val(message);
+    $('.message_textarea').focus();
+
+    messageToBeChanged = $(this).parent().prev();
+    $('.save_message').text('Save');
 });
 
 $('.messages').on('click', '.delete_message', function(e) {
@@ -476,7 +736,7 @@ $('.messages').on('click', '.delete_message', function(e) {
             if (tabs[i].title == 'Messenger') { // Find messenger tab
                 chrome.tabs.sendMessage(tabs[i].id, { action: 'deleteMessage', template, message });
                 break;
-            }               
+            }
         }
     });
 
@@ -484,14 +744,14 @@ $('.messages').on('click', '.delete_message', function(e) {
         type: 'POST',
         url: backendUrl + '/api/user/removeMessageFromTemplate',
         data: {
-            template, 
+            template,
             message,
         },
         beforeSend: function(request) {
             request.setRequestHeader("x-user-auth-token", userAuthToken);
         },
         success: function(data, textStatus, request) {
-            console.log(data.data);    
+            console.log(data.data);
         },
         error: function (request, textStatus, errorThrown) {
             console.log('Error adding message to friend');
@@ -607,7 +867,7 @@ async function saveImage(input) {
             if (messages[key] == null) messages[key] = [];
             let extension = mt.substring(mt.indexOf('/') + 1);
             if (extension == 'jpeg') extension = 'jpg';
-            let mes = '--template--' + template + '--' + generateId(10) + '-' 
+            let mes = '--template--' + template + '--' + generateId(10) + '-'
                 + (new Date().getTime()) + '.' + extension;
             messages[key].push(mes);
 
@@ -639,7 +899,7 @@ async function saveImage(input) {
                     request.setRequestHeader("x-user-auth-token", userAuthToken);
                 },
                 success: function(data, textStatus, request) {
-                    console.log(data);    
+                    console.log(data);
                 },
                 error: function (request, textStatus, errorThrown) {
                     console.log(request);
@@ -690,7 +950,7 @@ window.addEventListener('click', function(e) {
         let emojiContainer = $('.emoji_box_container');
         emojiContainer.css('display', 'none');
     }
-}); 
+});
 
 
 
@@ -701,7 +961,7 @@ const JpgToPngConvertor = (() => {
 
         const defaults = {};
         const settings = extend(defaults, options);
-        
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext("2d");
         const imageEl = createImage();

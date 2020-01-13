@@ -32,8 +32,8 @@
             ],
             "js": [
                 "jquery.js", 
+                "jquery-ui.js",
                 "arrive.js", 
-                "dexie.js", 
                 "content.js"
             ]
         }
