@@ -22,7 +22,7 @@ function openSignup() {
 }
 
 // Display login section
-function openLogin() {
+function openLogin() { 
     $signupBox.css('display', 'none');
     $loginBox.css('display', 'block');
     $mainContentBox.css('display', 'none');
@@ -102,8 +102,8 @@ chrome.storage.local.get(storageKeys, function(result) {
     // Add all saved tags to the popup
     setSelectCheckbox();
     addTags();
-    if (lastTagOpened != null && lastTagOpened != '')
-        setTagFriendList(lastTagOpened);
+    if (lastTagOpened == null) lastTagOpened = '---';
+    setTagFriendList(lastTagOpened);
     setTemplates();
 });
 
@@ -116,30 +116,60 @@ function setSelectCheckbox() {
     }
 }
 
+let tagCount = [];
 function addTags() {
     $tagBox = $('.tag_box');
+    chrome.storage.local.get(['tag_box_height'], function(result) {
+        let hh = result['tag_box_height'];
+        $('.tag_outer').css('height', hh);
+    });
 
     $('.tag_outer')
         .resizable({
             minHeight: 63,
             handles: 's',
             autoHide: true,
+            stop: function(e, ui) {
+                let h = $('.tag_outer').height();
+                chrome.storage.local.set({ 'tag_box_height': h })
+            }
         });
 
+
+    tagCount = [];
+    for (let i = 0; i < friendList.length; i++) {
+        let t = friendList[i].tag;
+        if (tagCount[t] == null) {
+            tagCount[t] = 0;
+        } else {
+            tagCount[t]++;
+        }
+    }
+    console.log(tagCount);
+
+    // for (let i = 0; i < tags.length; i++) {
+    //     for (let j = 0; j < tags.)
+    // }
 
     tagHtml = '';
     for (let i = 0; i < tags.length; i++) {
         tagHtml += `
-            <div class="tag_item" style="background:${tags[i].color}">
-                <div class="upper_section" style="display: flex;">
+            <div id="tag-${tags[i].name.replace(/ /g, '-')}" class="tag_item" style="background:${tags[i].color}">
+                <div class="upper_section" style="display: flex;justify-content:space-between;">
                     <div class="tag_value" style="inline-block;">${tags[i].name}</div>
                     <div class="tag_remove" style="display:inline-block;margin-left:10px;">
                         <i class="fa fa-trash-o" style="font-size:14px;"></i>
                     </div>
                 </div>
-                <div class="lower_section" style="margin-top:4px;display:inline-block;float:right;">
-                    <i class="fa fa-pencil tag_edit" style="font-size:14px;margin-right:2px;"></i>
-                    <i class="fa fa-paint-brush tag_select_color" style="font-size:14px;"></i>
+                <div class="lower_section" style="margin-top:2px;display:flex;justify-content:space-between;">
+                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:2px 4px;">
+                        ${tagCount[tags[i].name]==null?0:tagCount[tags[i].name] + 1}
+                    </div>
+                    <div class="tag_actions" style="float:right;">
+                        <i class="fa fa-arrows tag_move" style="font-size:13px;margin-right:0px;"></i>
+                        <i class="fa fa-pencil tag_edit" style="font-size:13px;margin-right:0px;"></i>
+                        <i class="fa fa-paint-brush tag_select_color" style="font-size:13px;"></i>
+                    </div>
                 </div>
             </div>`;
     }
@@ -147,6 +177,7 @@ function addTags() {
 
     $('.tag_box').sortable({
         cursor: 'move',
+        handle: '.tag_move',
         start: function(event, ui) {
             let startPos = ui.item.index();
             ui.item.data('start_pos', startPos);
@@ -246,11 +277,11 @@ function setTemplates() {
 
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 }
 
@@ -289,7 +320,7 @@ $('#signup_form').submit(function(e) {
 
         },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error signing up');
+            console.log(request);
         }
     })
 });
@@ -329,7 +360,7 @@ $('#login_form').submit(function(e) {
             });
         },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error signing up');
+            console.log(request);
         }
     });
 });
@@ -356,11 +387,11 @@ function loadDataFromServer() {
             //chrome.storage.sync.set({ friendList, messages: data.data.messages });
 
             let t = data.data.templates, temp = [], mes = [], storageKey = {};
-            console.log(t);
+            //console.log(t);
             for (let i = 0; i < t.length; i++) {
                 temp.push(t[i].name);
                 let k = generateKey(t[i].name);
-                console.log(t[i].messages);
+                //console.log(t[i].messages);
                 mes[k] = t[i].messages;
                 storageKey[k] = t[i].messages;
             }
@@ -377,6 +408,8 @@ function loadDataFromServer() {
             console.log(stk);
             chrome.storage.local.set(stk);
 
+            setTagFriendList('---');
+
             // Enable extension
             chrome.tabs.getAllInWindow(null, function(tabs) {
                 // Find messenger tab
@@ -391,21 +424,24 @@ function loadDataFromServer() {
                             templates,
                             storageKey,
                         });
-                        console.log('mess = ', messages);
-                        console.log('m', mes);
+                        //console.log('mess = ', messages);
+                        //console.log('m', mes);
                         break;
                     }
                 }
             });
         },
         error: function (request, textStatus, errorThrown) {
-            console.log('Error loading data from server');
+            console.log(request);
         }
     });
 }
 
+let changedFriend = null;
 function setTagFriendList(tag) {
-    let buttonStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;border-radius:15px;background:blue;color:white;';
+    console.log('setTagFriendList');
+    let buttonStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;background:rgb(105,114,207);border-radius:4px;color:white;';
+    let buttonRemoveStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;background:white;border-radius:4px;color:rgba(105,114,207);border:1px solid rgb(105,114,207);;';
     let selectStyle = `width:100px;margin-right:4px;margin-left:4px;appearance:none;color:white;`;
     let optionStyle = `color:white;padding:4px;`;
     let friends = [];
@@ -416,16 +452,16 @@ function setTagFriendList(tag) {
     let color = '';
 
     console.log('Friend List');
-    console.log(friendList);
+    console.table(friendList);
 
     for (let i = 0; i < friendList.length; i++) {
-        if (friendList[i].tag == tag) {
+        //if (friendList[i].tag == tag) {
 
             options = '';
             //options = `<option style="background:white;color:black;" value="...">...</option>`
 
             for (let j = 0; j < tags.length; j++) {
-                if (tags[j].name == tag) {
+                if (tags[j].name == friendList[i].tag) {
                     color = tags[j].color;
                     options +=
                     `<option style="background:${tags[j].color};${optionStyle}" value="${tags[j].name}" selected>
@@ -441,52 +477,81 @@ function setTagFriendList(tag) {
 
             friends.push(friendList[i]);
             friendHtml +=
-                `<div class="tag_friend_item" style="display:flex;padding-left: 6px;">
+                `<div class="tag_friend_item" style="display:none;padding-left:14px;">
                     <div class="friend_image" style="width:55px;height:55px;background:grey;border-radius:50%;overflow:hidden;">
                         <img style="width:100%;height:100%;" src="${friendList[i].imageUrl}">
                     </div>
-                    <div class="friend_detail" style="margin-left:16px;">
-                        <div class="friend_main">
-                            <div class="friend_name" style="overflow:hidden;text-overflow:elipsis;">${friendList[i].name}</div>
+                    <div class="friend_detail" style="margin-left:16px;flex:1;">
+                        <div class="friend_main" style="display:flex;justify-content:space-between;">
+                            <div class="friend_name" style="width:100px;font-size:15px;overflow:hidden;text-overflow:ellipsis;">${friendList[i].name}</div>
                             <select id='select-${friendList[i].id}' class="friend_select" style="${selectStyle}background:${color};">
                                 ${options}
                             </select>
                         </div>
-                        <div class="friend_action" style="display:flex;">
+                        <div class="friend_action" style="display:flex;margin-top:10px;">
                             <div class="friend_chat" style="${buttonStyle}margin-right:16px;">Chat</div>
                             <div class="friend_note" style="${buttonStyle}margin-right:16px;">Note</div>
-                            <div class="friend_remove" style="${buttonStyle}">Remove</div>
+                            <div class="friend_remove" style="${buttonRemoveStyle}">Remove</div>
                         </div>
                     </div>
                 </div>`;
             count++;
-        }
+        //}
     }
 
-    if (count > 0) {
-        friendHtml =
-            `<div style="font-weight:14px;font-weight:bold;">Contacts for
-                <span class="tag_heading_for_friend_list" style="font-style:italic">'${tag}'</span>
-            </div>` + friendHtml;
-    } else {
-        friendHtml =
-            `<div style="font-weight:14px;font-weight:bold;">No contacts available for
-                <span class="tag_heading_for_friend_list" style="font-style:italic">'${tag}'</span>
-            </div>` + friendHtml;
-    }
+    friendHtml =
+            `<div class="friend_list_heading" style="display:flex;justify-content:space-between;align-items:center;font-weight:14px;font-weight:bold;">
+                <input type="text" id="friend_search_input" class="search_input" placeholder="Search friends">
+                <div class="search_logo" style="margin-right:6px;font-size:16px;cursor:pointer;">
+                    <i class="fa fa-search"></i>
+                </div>
+            </div>
+            <div class="tag_friends">${friendHtml}</div>`;
 
     $friendBox = $('.tag_friend_box');
     $friendBox.html(friendHtml);
+
+    setTagFriends(tag);
+
+    $('#friend_search_input').on('keyup', function(e) {
+        let searchText = $(this).val().trim();
+        if (searchText == '') {
+            chrome.storage.local.get('lastTagOpened', function(result) {
+                let tag = result['lastTagOpened'];
+                setTagFriendList(tag);
+                $('#friend_search_input').focus();
+            });
+        } else {
+            $('.tag_friends .tag_friend_item').filter(function() {
+                if ($(this).find('.friend_name').text().trim().toLowerCase().indexOf(searchText.toLowerCase()) > -1) {
+                    $(this).css('display', 'flex');
+                } else {
+                    $(this).css('display', 'none');
+                }
+            });
+        }
+    });
+
+    $('.friend_select').on('focus', function(e) {
+        $(this).data('oldValue', $(this).val().trim());
+    });
 
     $('.friend_select').on('change', function(e) {
         e.stopPropagation();
         e.stopImmediatePropagation();
 
         let friendId = $(this).attr('id').split('-')[1];
-        console.log('IIDD = ', friendId);
         let friendName = $(this).prev().text().trim();
         let friendImageUrl = $(this).parent().parent().prev().find('img').attr('src');
         let tag = $(this).val();
+        let oldTag = $(this).data('oldValue');
+
+        let t1 = $('#tag-' + tag.replace(/ /g, '-')).find('.tag_friend_count');
+        let t2 = $('#tag-' + oldTag.replace(/ /g, '-')).find('.tag_friend_count');
+        let c1 = parseInt(t1.text().trim());
+        let c2 = parseInt(t2.text().trim());
+        t1.text(++c1);
+        t2.text(--c2);
 
         if (tag == '...') {
             $(this).css({
@@ -530,17 +595,10 @@ function setTagFriendList(tag) {
         console.log(friendList);
         chrome.storage.local.set({ friendList });
 
-        $(this).parent().parent().parent().remove();
+        changedFriend = $(this).parent().parent().parent();
+        changedFriend.css('display', 'none');
+        $(this).find(`option[value="${tag}"]`).prop('selected', true);
 
-        // if (tag != '...') {
-        //     let allTags = $('.tag_value');
-        //     allTags.each(function() {
-        //         if ($(this).text().trim() == tag) {
-        //             $(this).trigger('click');
-        //             return false;
-        //         }
-        //     });
-        // }
 
         chrome.tabs.getAllInWindow(null, function(tabs) {
             for (let i = 0; i < tabs.length; i++) {
@@ -550,16 +608,31 @@ function setTagFriendList(tag) {
                 }
             }
         });
+    });
+}
 
-        // // Send data to background for saving to the server
-        // chrome.runtime.sendMessage({
-        //     type: 'addTagToFriend',
-        //     friendId,
-        //     friendName,
-        //     tag,
-        //     friendImageUrl,
-        //     userAuthToken,
-        // });
+function setTagFriends(tag) {
+    tag = tag.trim();
+    if (changedFriend != null) {
+        changedFriend.css('display', 'flex');
+        changedFriend = null;
+    }
+    
+    let currentTagSelected = $('.friend_list_heading .current_tag_selected');
+    if (currentTagSelected == null | currentTagSelected.length == 0) {
+        $('.friend_list_heading').append(`<div class="current_tag_selected" style="display:none;">${tag}</div>`);
+    } else {
+        currentTagSelected.text(tag);
+    }
+
+    $('.tag_friends .tag_friend_item').each(function() {
+        let s = $(this).find('.friend_select').val().trim();
+        console.log(s);
+        if (s == tag) {
+            $(this).css('display', 'flex');
+        } else {
+            $(this).css('display', 'none');
+        }
     });
 }
 
@@ -572,6 +645,13 @@ $('.tag_friend_box').on('click', '.friend_remove', function(e) {
     console.log(friendId);
 
     $(this).parent().parent().parent().remove();
+
+    console.log()
+    let tag = $('.friend_list_heading .current_tag_selected').text().trim();
+    console.log(tag);
+    let tagCount = $('#tag-' + tag.replace(/ /g, '-')).find('.tag_friend_count');
+    console.log(tagCount, tagCount.text());
+    tagCount.text(parseInt(tagCount.text()) - 1);
 
     console.log(friendList);
 
@@ -603,6 +683,24 @@ $('#add_tag_form').submit(function(e) {
     $tagBox = $('.tag_box');
     $tagInput = $('#tag_input');
     tag = $tagInput.val(); // Tag value
+
+    if (tag == '') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Tag cannot be empty.`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+        `);
+
+        return false;
+    }
 
     if ($('.tag_button').attr('value') == 'Save tag') {
         $('#tag_input').val('');
@@ -645,7 +743,18 @@ $('#add_tag_form').submit(function(e) {
         // Cheack if tag is alredy present
         for (let i = 0; i < tags.length; i++) {
             if (tags[i] == tag) {
-                console.log('Tag already present');
+                $('.overlay_view').css({
+                    'width': '300px',
+                    'height': 'auto',
+                });
+                $('.overlay').css('display', 'block');
+                $('.overlay_heading').html(`
+                    <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Warning</span>
+                `);
+                $('.overlay_text').html(`Tag with the name <span style="font-weight:bold;">${tag}</span> already exist`);
+                $('.overlay_action').html(`
+                    <div class="secondary_button action_cancle" style="width:65px;">Cancle</div>
+                `);
                 return;
             }
         }
@@ -657,7 +766,11 @@ $('#add_tag_form').submit(function(e) {
         console.log(color);
 
         // Tag not present so add to the tags array
-        tags.push({ name: tag, color: color });
+        tags.push({ name: tag, color: color, friendCount: 0 });
+
+        if (tags.length == 1) {
+            chrome.storage.local.set({ lastTagOpened: tag });
+        }
 
         // Add tag to popup
         $tagBox.append(`
@@ -665,12 +778,18 @@ $('#add_tag_form').submit(function(e) {
                 <div class="upper_section" style="display: flex;">
                     <div class="tag_value" style="inline-block;">${tag}</div>
                     <div class="tag_remove" style="display:inline-block;margin-left:10px;">
-                        <i class="fa fa-remove" style="font-size:14px;"></i>
+                        <i class="fa fa-trash-o" style="font-size:14px;"></i>
                     </div>
                 </div>
-                <div class="lower_section" style="margin-top:4px;display:inline-block;float:right;">
-                    <i class="fa fa-pencil tag_edit" style="font-size:14px;margin-right:2px;"></i>
-                    <i class="fa fa-paint-brush tag_select_color" style="font-ssize:14px;"></i>
+                <div class="lower_section" style="margin-top:2px;display:flex;justify-content:space-between;">
+                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:2px 4px;">
+                        ${0}
+                    </div>
+                    <div class="tag_actions" style="float:right;">
+                        <i class="fa fa-arrows tag_move" style="font-size:13px;margin-right:0px;"></i>
+                        <i class="fa fa-pencil tag_edit" style="font-size:13px;margin-right:0px;"></i>
+                        <i class="fa fa-paint-brush tag_select_color" style="font-size:13px;"></i>
+                    </div>
                 </div>
             </div>`
         );
@@ -722,13 +841,18 @@ $('#add_tag_form').submit(function(e) {
     $('.tag_button').attr('value', 'Add tag');
 });
 
+$('.overlay_action').on('click', '.action_cancle', function(e) {
+    removeOverlay();
+});
+
 let tagClickedForColor = null;
 $('.tag_box').on('click', '.tag_select_color', function(e) {
     console.log('Tag color select');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    tagClickedForColor = $(this).parent().parent();
+    //tagClickedForColor = $(this).parent().parent().parent();
+    tagClickedForColor = $(this).closest('.tag_item');
 
     let offset = $(this).offset();
     let x = offset.left;
@@ -867,27 +991,51 @@ window.addEventListener('click', function(e) {
     }
 });
 
+function removeOverlay() {
+    $('.overlay').css('display', 'none');
+    $('.overlay_heading').html('');
+    $('.overlay_text').html('');
+    $('.overlay_action').html('');
+}
+
 $('.tag_box').on('click', '.tag_remove', function(e) {
     console.log('remove');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let $parent = $(this).parent();
     let tag = $(this).prev().text().trim();
-    console.log($(this).prev());
+
+
+    $('.overlay_view').css({
+        'width': '300px',
+        'height': 'auto',
+    });
+    $('.overlay').css('display', 'block');
+
+    $('.overlay_heading').html(`
+        <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Warning</span>
+    `);
+    $('.overlay_text').html(`Are you sure you want to delete tag <span style="font-weight:bold;">${tag}</span>?`);
+    $('.overlay_action').html(`
+        <div class="secondary_button action_tag_delete_no" style="width:65px;margin-right:20px;">No</div>
+        <div class="secondary_button action_tag_delete_yes" style="width:65px;">Yes</div>
+    `);
+
+    tagToBeDeleted = $(this);
+});
+
+$('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
+    removeOverlay();
+
+    let tag = tagToBeDeleted.prev().text().trim();
     console.log(tag);
-    //$parent.remove();
-    $(this).parent().parent().remove();
+    tagToBeDeleted.parent().parent().remove();
 
     chrome.storage.local.get('lastTagOpened', function(result) {
         if (result.lastTagOpened == tag) {
-            $('.tag_friend_box').html(
-                `<div style="font-weight:14px;font-weight:bold;">
-                    No contacts available
-                </div>`
-            );
-            $('.messages').html('');
+            //$('.messages').html('');
             $('.notes').html('');
+            setTagFriends('nhasjdwqkdjkasndkwljdlk');
 
             chrome.storage.local.set({ lastTagOpened: '' });
         }
@@ -936,9 +1084,15 @@ $('.tag_box').on('click', '.tag_remove', function(e) {
     });
 });
 
+$('.overlay_action').on('click', '.action_tag_delete_no', function(e) {
+    removeOverlay();
+});
+
 $('.tag_box').on('click', '.tag_edit', function(e) {
-    let tag = $(this).parent().prev().find('.tag_value').text().trim();
+    //let tag = $(this).parent().prev().find('.tag_value').text().trim();
+    let tag = $(this).closest('.tag_item').find('.tag_value').text().trim();
     $('#tag_input').val(tag);
+    $('#tag_input').attr('placeholder', 'Edit and save ' + tag + ' tag');
     $('#tag_input').focus();
     $('.tag_button').attr('value', 'Save tag');
 
@@ -952,28 +1106,26 @@ $('.tag_box').on('click', '.tag_edit', function(e) {
 });
 
 $('.tag_box').on('click', '.tag_value', function(e) {
-    console.log('tag value selected');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
+    $('.tag_button').attr('value', 'Add tag');
+    $('#tag_input').val('');
+    $('#tag_input').attr('placeholder', 'Add a new tag');
+
     let tag = $(this).text();
-    chrome.storage.local.get('lastTagOpened', function(result) {
+    //console.log(tag);
+
+    chrome.storage.local.set({ lastTagOpened: tag });
+    setTagFriends(tag);
+
+    //chrome.storage.local.get('lastTagOpened', function(result) {
         //if (result.lastTagOpened != tag) {
-            chrome.storage.local.set({ lastTagOpened: tag });
+            //chrome.storage.local.set({ lastTagOpened: tag });
 
-            // $('.note_box').css('display', 'none');
-            // if ($('.template_box').css('display') == 'none')
-            //     $('.message_box').css('display', 'block');
-            // else $('.template_box').css('display', 'block');
-
-            setTagFriendList(tag);
-
-            // $('.add_template').css({
-            //     'pointer-events': 'auto',
-            //     'background': 'rgb(3, 166, 133)'
-            // });
+            //setTagFriends(tag);
         //}
-    });
+    //});
 });
 
 $('.tag_friend_box').on('click', '.friend_chat', function(e) {
@@ -1052,15 +1204,15 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
 
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_note').css({
         'pointer-events': 'note',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 });
 
@@ -1075,15 +1227,15 @@ $('.note_box').on('click', '.add_note', function(e) {
     $('.notes').scrollTop($('.notes').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.save_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.cancel_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
 });
 
@@ -1125,15 +1277,15 @@ $('.note_box').on('click', '.save_note', function(e) {
 
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 
     $.ajax({
@@ -1203,21 +1355,21 @@ $('.note_box').on('click', '.delete_note', function(e) {
     });
 });
 
-$('.note_box').on('click', '.cancel_note', function() {
+$('.note_box').on('click', '.cancel_note', function(e) {
     console.log('cancel note');
 
     $('.notes').find('textarea').remove();
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 });
 
@@ -1299,16 +1451,33 @@ $('.nav_template').on('click', function(e) {
     $('.nav_note').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.template_box').css('display', 'block');
     $('.note_box').css('display', 'none');
-    $('.nav_template').css('cursor', 'auto');
 });
 
-$('.nav_message_menu').on('click', function(e) {
+$('.nav_note').on('click', function(e) {
+    console.log('Nav note clicked');
+    let noteBoxDisplay = $('.note_box').css('display');
+    console.log(noteBoxDisplay);
+
+    if (noteBoxDisplay == 'block') {
+
+    } else {
+        $('.notes').html(`<div class="note_text" style="margin-top:8px;font-style:italic;font-size:14px;">Click on friend note button to access the individual notes</div>`);
+        $('.nav_template').removeClass('nav_item_selected').addClass('nav_item_unselected');
+        $('.nav_message').removeClass('nav_item_selected').addClass('nav_item_unselected');
+        $('.nav_note').removeClass('nav_item_unselected').addClass('nav_item_selected');
+        $('.note_box').css('display', 'block');
+        $('.template_box').css('display', 'none');
+        $('.message_box').css('display', 'none');
+    }
+});
+
+$('.nav_message').on('click', function(e) {
     console.log('nav_messsage clicked');
     $('.nav_message').removeClass('nav_item_unselected').addClass('nav_item_selected');
+    $('.nav_template').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.nav_note').removeClass('nav_item_selected').addClass('nav_item_unselected');
     $('.message_box').css('display', 'block');
     $('.note_box').css('display', 'none');
-    $('.nav_message').css('cursor', 'auto');
 });
 
 $('.message_box').on('click', '.add_message', function(e) {
@@ -1322,15 +1491,15 @@ $('.message_box').on('click', '.add_message', function(e) {
     $('.messages').scrollTop($('.messages').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.save_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.cancel_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
 });
 
@@ -1339,7 +1508,26 @@ $('.message_box').on('click', '.save_message', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let message = $('.message_textarea').val();
+    let message = $('.message_textarea').val().trim();
+
+    if (message == '') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Message cannot be empty`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+        `);
+
+        return false;
+    }
+
     $('.message_textarea').remove();
     $('.messages').append(
         `<div class="message" style="display:flex;justify-content:space-between;">
@@ -1364,15 +1552,15 @@ $('.message_box').on('click', '.save_message', function(e) {
 
     $('.add_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208), .5'
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 
     // Send message to content.js to disable the extension
@@ -1410,15 +1598,15 @@ $('.message_box').on('click', '.cancel_message', function(e) {
     $('.messages').find('textarea').remove();
     $('.add_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 });
 
@@ -1501,7 +1689,6 @@ $('.template_box').on('click', '.template', function(e) {
                     if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
                         chrome.tabs.sendMessage(tabs[i].id,
                             { action: 'changeMessageOrder', template, i1, i2 });
-                        break;
                     }
                 }
             });
@@ -1528,11 +1715,11 @@ $('.template_box').on('click', '.template', function(e) {
 
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 });
 
@@ -1544,15 +1731,15 @@ $('.template_box').on('click', '.add_template', function(e) {
     $('.templates').scrollTop($('.templates').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.save_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.cancel_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
 });
 
@@ -1561,11 +1748,44 @@ $('.template_box').on('click', '.save_template', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let template = $('.template_textarea').val();
+    let template = $('.template_textarea').val().trim();
+
+    if (template == '') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Template name cannot be empty.`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+        `);
+
+        return false;
+    }
+
     for (let i = 0; i < templates.length; i++) {
         if (templates[i] == template) {
-            console.log('Template with this name already present.');
-            return;
+            $('.overlay_view').css({
+                'width': '300px',
+                'height': 'auto',
+            });
+            $('.overlay').css('display', 'block');
+
+            $('.overlay_heading').html(`
+                <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+            `);
+            $('.overlay_text').html(`Template with tha name <span style="font-weight:bold;">${template}</span> already exist.`);
+            $('.overlay_action').html(`
+                <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+            `);
+
+            
+            return false;
         }
     }
 
@@ -1585,15 +1805,15 @@ $('.template_box').on('click', '.save_template', function(e) {
 
     $('.add_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 
     // Send message to content.js to disable the extension
@@ -1601,7 +1821,7 @@ $('.template_box').on('click', '.save_template', function(e) {
         for (let i = 0; i < tabs.length; i++) {
             // Find messenger tab
             if (tabs[i].title == 'Messenger' || tabs[i].title == 'Pepper messages') {
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'addTemplate', template });
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'newTemplate', template });
             }
         }
     });
@@ -1628,15 +1848,15 @@ $('.template_box').on('click', '.cancel_template', function(e) {
     $('.templates').find('textarea').remove();
     $('.add_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(3, 166, 133)'
+        'background': 'rgb(81, 108, 208)'
     });
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(3, 166, 133, .5)'
+        'background': 'rgb(81, 108, 208, .5)'
     });
 });
 
@@ -1756,4 +1976,10 @@ $('.logout_box').click(() => {
             }
         });
     });
+});
+
+$('.templates').on('keypress', '.template_textarea', function(e) {
+    if (e.which == 13) {
+        $('.save_template').trigger('click');
+    }
 });

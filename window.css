@@ -400,7 +400,7 @@ table {
 th {
     width: 44px;
     height: 44px;
-    background: white;
+    background: red;;
 }
 
 .messages:hover {

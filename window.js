@@ -43,8 +43,8 @@ chrome.runtime.onMessage.addListener(
                 console.log('chnageMessageOrder');
                 changeMessageOrder(message.template, message.i1, message.i2);
             break;
-            case 'addTemplate':
-                console.log('addTemplate');
+            case 'newTemplate':
+                console.log('newTemplate');
                 addTemplate(message.template);
             break;
             case 'deleteTemplate':
@@ -326,6 +326,24 @@ function deleteTemplate(template) {
 $('.add_template_button').click(function(e) {
     let template = $('.add_template_input').val().trim();
 
+    if (template == '') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Template cannot be empty`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_template_no" style="width:65px;">Cancel</div>
+        `);
+
+        return;
+    }
+
     $('.add_template_input').val('');
 
     // Check for template with the same name
@@ -582,6 +600,24 @@ $('.templates').on('click', '.edit_template', function(e) {
 
 $('.save_message').on('click', function(e) {
     let message = $('.message_textarea').val().trim();
+
+    if (message == '') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Message cannot be empty.`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_template_no" style="width:65px;">Cancel</div>
+        `);
+
+        return;
+    }
 
     let $template = $('.template_selected');
     if ($template.length == 0) {

@@ -207,6 +207,8 @@ function changeTemplateOrder(i1, i2) {
 }
 
 function changeSelect(id, tag) {
+    console.log(id, tag);
+
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].id == id) {
             friendList[i].tag = tag;
@@ -214,6 +216,8 @@ function changeSelect(id, tag) {
         }
     }
 
+    //console.log($('#select-' + id.replace(/abc123/)));
+    //$('#select-' + id.replace(/abc123/g, '.')).val(tag);
     $('#select-' + id).val(tag);
     $('#select-' + id).trigger('change');
 }
@@ -381,7 +385,7 @@ function deleteTemplate(template) {
         }
     }
 
-    let $children = $('.templates').children();
+    let $children = $('.template');
     $children.each(function() {
         if ($(this).find('.template_value').text().trim() == template) {
             $(this).remove();
@@ -437,6 +441,8 @@ function start() {
 
         setFriendListClickListener();
     }
+
+    console.log($('#select-ahmer.raza.520'));
 }
 
 function setFriendListClickListener() {
@@ -847,9 +853,7 @@ function addSelectToFriend(item) {
     let friendName = item.find('span').text();
 
     $a = item.closest('a._2il3');
-    //$a = item.closest('._5l-3._1ht5');
     let id = $a.attr('data-href').split('/t/')[1];//.replace(/./g, '0');
-    //let id = $a.attr('data-testid').split(':')[1];
     $a.closest('li').attr('fb_user_id', id);
 
     let flag = false;
@@ -894,10 +898,15 @@ function appendSelectAndAddListener(item, options, o) {
     else selectStyle += 'display:none;';
 
     item.html(item.html() + //o.id.replace(/\./g, 'a')
-        `<select id="select-${o.id}" class="tag_select" style="${selectStyle}${s}">
+        `<select id="select-${o.id.replace(/\./g, 'abc123')}" class="tag_select" style="${selectStyle}${s}">
             <option>...</option>
             ${options}
         </select>`);
+
+    $('.tag_select').on('focus', function(e) {
+        $(this).data('oldValue', $(this).val().trim());
+    });
+
 
     $('.tag_select').on('change', function(e) {
         console.log('change');
@@ -905,10 +914,11 @@ function appendSelectAndAddListener(item, options, o) {
         e.stopImmediatePropagation();
 
         let friendId = $(this).attr('id').split('-')[1];
-        console.log('Addind id = ', friendId);
+        //console.log('Addind id = ', friendId);
         let friendName = $(this).prev().text().trim();
         let friendImageUrl = $(this).parent().parent().prev().find('img').attr('src');
-        let tag = $(this).val();
+        let tag = $(this).val().trim();
+        let oldTag = $(this).data('oldValue');
 
         if (tag == '...') {
             $(this).css({
@@ -982,8 +992,8 @@ function removeTag(tag) {
     for (let i = 0; i < friendList.length; i++) {
         if (friendList[i].tag == tag) {
             console.log('ID = ', friendList[i].id);
-            console.log($('#select-' + friendList[i].id));
-            $('#select-' + friendList[i].id).css({
+            console.log($('#select-' + friendList[i].id.replace(/\./g, 'abc123')));
+            $('#select-' + friendList[i].id.replace(/\./g, 'abc123')).css({
                 background: 'white',
                 'color': 'black'
             });
@@ -994,6 +1004,9 @@ function removeTag(tag) {
     while(spliceIndex.length) {
         friendList.splice(spliceIndex.pop(), 1);
     }
+    console.log(friendList);
+
+    chrome.storage.local.set({ friendList });
 }
 
 function getFriendKey(friendName) {
@@ -1008,21 +1021,33 @@ function logout() {
 }
 
 function selectFriend(friendName, friendId) {
-    console.log('using tabs update', friendId);
-    //chrome.tabs.update({ url: "https://facebook.com/messages/t/" + friendId });
-    window.location.replace("https://facebook.com/messages/t/" + friendId);
-    return;
+    // console.log('using tabs update', friendId);
+    // //chrome.tabs.update({ url: "https://facebook.com/messages/t/" + friendId });
+    // window.location.replace("https://facebook.com/messages/t/" + friendId);
+    // return;
 
+    // $chatList.each(function() {
+    //     if ($(this).find('span').text() == friendName) {
+    //         $(this).trigger('click');
+    //         $(this).mclick();
+    //         return false;
+    //     }
+    // });
+
+
+    let flag = false;
     $chatList.each(function() {
         if ($(this).find('span').text() == friendName) {
             $(this).trigger('click');
             $(this).mclick();
+	        flag = true;
             return false;
         }
     });
 
-
-
+    if (flag == false) {
+	    window.location.replace("https://facebook.com/messages/t/" + friendId.replace(/abc123/g, '.'));
+    }
 }
 
 async function loadBlob(fileName) {
@@ -1089,13 +1114,16 @@ async function sendMessage(templateMessage) {
             $next = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").next('li').find('a');
             $prev = $(fb_ul_selector + " li[fb_user_id='" + loc[1] + "']").prev('li').find('a');
             let flag = true;
+            
             if ($next.length > 0) {
                 $next.mclick();
                 flag = true;
-            } else {
+            } else if ($prev.length > 0) {
                 $prev.mclick();
                 flag = false;
-            }
+            } else {
+		        location.reload();
+	        }
             setTimeout(function() {
                 let loc1 = window.location.href;
                 loc1 = loc1.split("/t/");
@@ -1103,6 +1131,13 @@ async function sendMessage(templateMessage) {
                 $prev = $(fb_ul_selector + " li[fb_user_id='" + loc1[1]+"']").prev('li').find('a');
                 if (flag) $prev.mclick();
                 else $next.mclick();
+
+                setTimeout(function() {
+                    let k = $('._5jpt ._4rv3 ._2pen');
+                    if (k.length == 1) {
+                    location.reload();
+                    }
+                }, 100);
             }, 100);
         }
     } else {

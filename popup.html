@@ -15,10 +15,10 @@
 <body style="width:750px;height:550px;">
 
     <div class="overlay">
-        <div class="overlay_content_box">
-            <div class="oberlay_content">
-                
-            </div>
+        <div class="overlay_view">
+            <div class="overlay_heading"></div>
+            <div class="overlay_text"></div>
+            <div class="overlay_action"></div>
         </div>
     </div>
 
@@ -49,24 +49,54 @@
     </div>
 
     <div class="main_content" style="display:none">
-        <div class="main_action">
+        <!-- <div class="main_action">
             <div class="select_box">
                 <input id="select_checkbox" type="checkbox" class=".select_checkbox">
             </div>
-            <div class="chat_box">Messages</div>
-            <div class="logout_box">Logout</div>
-        </div>
-        
-        <div class="tag_form">
-            <!-- <div class="primary-text tag_text">Add a new tag</div> -->
+            <div class="logo_box">
+                <img class="main_logo" src="images/favicon.png">
+            </div>
+            <div class="main_actions">
+                <div class="action_box chat_box">
+                    <i class="fa fa-envelope"></i>
+                </div>
+                <div class="action_box logout_box">
+                    <i class="fa fa-power-off"></i>
+                </div>
+            </div>
+        </div> -->
+
+        <div class="main_action">
+            
             <form id="add_tag_form" action="">
                 <input id="tag_input" class="tag_input" type="text" placeholder="Add a new tag" autocomplete="off">
                 <input class="primary-button tag_button" type="submit" value="Add tag">
             </form>
+
+            <div class="main_actions">
+                <input id="select_checkbox" type="checkbox" class="select_checkbox">
+                <div class="action_box chat_box" title="Message">
+                    <i class="fa fa-envelope"></i>
+                </div>
+                <div class="action_box logout_box" title="Logout">
+                    <i class="fa fa-power-off"></i>
+                </div>
+            </div>
         </div>
+        
+        <!-- <div class="tag_form">
+            <div class="primary-text tag_text">Add a new tag</div>
+            <form id="add_tag_form" action="">
+                <input id="tag_input" class="tag_input" type="text" placeholder="Add a new tag" autocomplete="off">
+                <input class="primary-button tag_button" type="submit" value="Add tag">
+            </form>
+        </div> -->
 
         <div class="tag_outer">
-        <div class="tag_box ui-widget-content" style="width:100%;height:100%;"></div>
+            <div class="tag_box ui-widget-content" style="width:100%;height:100%;"></div>
+            <div class="textarea_line_container">
+                <img src="images/side-size.svg" alt="">
+            </div>
         </div>
 
         <div class="tag_action">
