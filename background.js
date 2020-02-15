@@ -1,7 +1,8 @@
 console.log('Hello from the background!');
 
 //const backendUrl = 'http://localhost:4400';
-const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
+const backendUrl = 'https://ahmerraza.com';
 
 // Load user auth token required for requires
 let userAuthToken;

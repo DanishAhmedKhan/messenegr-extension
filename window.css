@@ -9,7 +9,7 @@
 body {
     width: 100vw;
     height: 100vh;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Poppins', 'Lato', sans-serif;
     font-weight: 400;
     font-size: 16px;
     overflow: hidden;
@@ -33,23 +33,23 @@ image {
     width: 80%;
     height: 1px;
     margin: 0 auto;
-    background: #888;
+    background: #001C2A;
 }
 
 .primary_button {
     padding: 6px 7px;
     padding-top: 9px;
     font-size: 16px;
-    background: rgb(3, 166, 133);
+    background: rgba(0, 141, 211);
     color: white;
     cursor: pointer;
     text-align: center;
 }
 
 .secondary_button {
-    padding: 6px;
+    padding: 3px 7px;
     font-size: 16px;
-    background: rgb(3, 166, 133);
+    background: rgba(0, 141, 211);
     color: white;
     cursor: pointer;
     text-align: center;
@@ -68,16 +68,16 @@ image {
 } 
 ::-webkit-scrollbar-track {
     background: white; /*#f1f1f1*/ 
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 141, 211, .3); 
     border-radius: 10px;
 }  
 ::-webkit-scrollbar-thumb {
-    background: #888; 
-    -webkit-box-shadow: inset 0 0 6p rgba(0,0,0,0.3); 
+    background: rgba(0, 141, 211, .4); 
+    -webkit-box-shadow: inset 0 0 6p rgba(0, 141, 211, .3); 
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: rgba(0, 141, 211, .6); 
 }
 
 
@@ -135,7 +135,8 @@ image {
 .nav {
     width: 340px;
     height: 100%;
-    background: #333;
+    /* background: #333; */
+    background: #00547E;
 }
 
 .nav_header {
@@ -154,8 +155,13 @@ image {
 }
 
 .nav_header_user_image {
-    width: 30px;
-    height: 30px;
+    width: 60px;
+    height: 60px;
+}
+
+.nav_header_user_image img {
+    width: 100%;
+    height: 100%;
 }
 
 .nav_header_user_detail {
@@ -188,7 +194,11 @@ image {
 }
 
 .add_template {
+    width: 350px;
     display: block;
+    padding: 10px;
+    border: 1px solid rgba(0, 141, 211);
+    border-top: none;
 }
 
 .add_template_text {
@@ -198,36 +208,48 @@ image {
 }
 
 .add_template_form {
-    display: flex;
+    display: block;
 }
 
 .add_template_input {
-    width: 400px;
+    width: 100%;
     font-size: 14px;
 }
 
 .add_template_button {
-    width: 140px;
-    margin-left: 20px;
+    width: 100%;
+    /* margin-left: 20px; */
     font-size: 14px;
     padding-top: 8px;
+    margin-top: 10px;
 }
 
 .list {
     width: 100%;
-    height: calc(100% - 85px);
+    height: calc(100% - 40px);
     display: flex;
-    margin-top: 20px;
+}
+
+.template_heading {
+    width: 350px;
+    border: 2px solid rgba(0, 141, 211);
+    border-bottom: none;
+    padding: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    background: rgba(0, 141, 211);
 }
 
 .templates {
     width: 350px;
-    height: 100%;
-    background: #f2f2f2;
+    height: calc(100% - 98px);
+    /* background: #f2f2f2; */
     margin-right: 50px;
     padding-left: 10px;
     padding-right: 10px;
     overflow-y: hidden;
+    border: 1px solid rgba(0, 141, 211);
 }
 
 .templates:hover {
@@ -237,17 +259,22 @@ image {
 .template {
     display: flex;
     justify-content: space-between;
-    background: rgb(0, 0, 0, .1);
-    border-radius: 4px;
+    /* background: rgb(0, 0, 0, .1); */
+    /* border-radius: 4px; */
     padding: 6px 10px;
     margin-top: 10px;
     cursor: pointer;
     margin-bottom: 10px;
     line-height: 1.5;
+    border: 1px solid rgba(0, 141, 211);
+    transition: all .1s;
+    background: white;
 }
 
 .template_selected {
-    background: rgb(0, 0, 0, .23);
+    /* border: 2px solid rgba(0, 141, 211);
+    font-weight: 900; */
+    background: rgb(178, 221, 242);
 }
 
 .template_value {
@@ -286,18 +313,34 @@ image {
     color: black;
 }
 
-.message_box {
+.second_box {
     width: calc(100% - 400px);
     height: 100%;
+}
+
+.message_box {
+    height: 100%;
+}
+
+.message_heading {
+    width: 100%;
+    border: 2px solid rgba(0, 141, 211);
+    border-bottom: none;
+    padding: 8px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    background: rgba(0, 141, 211);
 }
 
 .messages {
     width: 100%;
     height: calc(100% - 59px);
-    background: #f2f2f2;
+    /* background: #f2f2f2; */
     overflow-y: hidden;
     padding-left: 10px;
     padding-right: 10px;
+    border: 1px solid rgba(0, 141, 211);
 }
 
 .message_value {
@@ -325,10 +368,12 @@ image {
 .message_textarea_box {
     width: 100%;
     height: 59px;
-    background: rgb(0, 0, 0, .23);;
+    /* background: rgb(0, 0, 0, .23);; */
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    border: 1px solid rgba(0, 141, 211);
+    border-top: none;
 }
 
 .message_textarea {
@@ -338,6 +383,11 @@ image {
     padding: 4px;
     font-size: 16px;
     margin-bottom: 16px;
+    border: 1px solid rgba(0, 141, 211);
+
+    resize: none;
+
+    max-height: 100px;
 }
 
 .edit_message {
@@ -364,7 +414,7 @@ image {
     margin-bottom: 16px;
     margin-right: 16px;
     font-size: 15px;
-    width: 55px;
+    width: 66px;
 }
 
 .emoji_box_container {
@@ -384,13 +434,26 @@ image {
 }
 
 .emoji_box {
-    height: 90%;
     background: white;
+    height: 80%;
     overflow-y: hidden;
 }
 
 .emoji_box:hover {
     overflow-y: overlay;
+}
+
+.emoji_tabs {
+    display: flex;
+    height: 10%;
+}
+
+.emoji_tab {
+    font-size: 18px;
+    padding-top: 4px;
+    flex: 1;
+    border: 1px solid rgba(0, 0, 0, .3);
+    border-bottom: none;
 }
 
 table {
@@ -400,7 +463,7 @@ table {
 th {
     width: 44px;
     height: 44px;
-    background: red;;
+    /* background: red;; */
 }
 
 .messages:hover {
@@ -410,15 +473,26 @@ th {
 .message {
     display: flex;
     justify-content: space-between;
-    background: rgb(0, 0, 0, .1);
-    border-radius: 4px;
+    /* background: rgb(0, 0, 0, .1); */
+    /* border-radius: 4px; */
     padding: 6px 10px;
     margin-top: 10px;
     /* cursor: pointer; */
     margin-bottom: 10px;
     line-height: 1.5;
+    border: 1px solid rgba(0, 141, 211);
+    background: white;
 }
 
 .message_value {
     font-size: 16px;
+}
+
+
+.fa-trash-o {
+    transition: color .08s;
+}
+
+.fa-trash-o:hover {
+    color: red;
 }

@@ -1,7 +1,9 @@
 console.log('Hello from popup!');
 
 //const backendUrl = 'http://localhost:4400';
-const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://ec2-13-232-210-23.ap-south-1.compute.amazonaws.com:4400';
+const backendUrl = 'https://ahmerraza.com';
 
 // Radom colors for tag
 const colors = ['#fa697c', '#10316b', '#94aa2a', '#fc7fb2', '#888888', '#c71c56', '#a25016', '	#6a3577',
@@ -83,8 +85,9 @@ chrome.storage.local.get(storageKeys, function(result) {
         lastTagOpened = result.lastTagOpened;
     if (result.templates != null)
         templates = result.templates;
-    // if (result.messages != null)
-    //     messages = result.messages;
+    
+    cleanFeiendList();
+    console.log(tags);
 
     let k = [];
     for (let i = 0; i < templates.length; i++) {
@@ -105,7 +108,48 @@ chrome.storage.local.get(storageKeys, function(result) {
     if (lastTagOpened == null) lastTagOpened = '---';
     setTagFriendList(lastTagOpened);
     setTemplates();
+
+    imageSendSetup();
 });
+
+function cleanFeiendList() {
+    for (let i = 0; i < friendList.length; i++) {
+        let tag = friendList[i].tag;
+        //console.log(friendList[i].name, tag, i);
+        if (friendList)
+        if (tag == '...') {
+            friendList.splice(i, 1);
+            i--;
+            //console.log('assasa');
+        } else {
+            let flag = false;
+            for (let j = 0; j < tags.length; j++) {
+                //console.log(tags[j].name);
+                if (tags[j].name == tag) {
+                    flag = true;
+                }
+            }
+            if (!flag) {
+                delete friendList.splice(i, 1);
+                i--;
+            }
+        }
+    }
+}
+
+function imageSendSetup() {
+    console.log('imageSendSetup');
+    let message = 'https://ahmerraza.com/temp/--template--apple--cFe5yVy67D-1581750024007.jpg';
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Messenger') {
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'sendMessage', message });
+                break;
+            }
+        }
+    });
+}
 
 function setSelectCheckbox() {
     console.log(sideBox);
@@ -139,13 +183,15 @@ function addTags() {
     tagCount = [];
     for (let i = 0; i < friendList.length; i++) {
         let t = friendList[i].tag;
+        //console.log(t, t.length);
+        console.log(tagCount[t]);
         if (tagCount[t] == null) {
             tagCount[t] = 0;
         } else {
             tagCount[t]++;
         }
     }
-    console.log(tagCount);
+    console.log(tagCount, tagCount.length);
 
     // for (let i = 0; i < tags.length; i++) {
     //     for (let j = 0; j < tags.)
@@ -156,18 +202,18 @@ function addTags() {
         tagHtml += `
             <div id="tag-${tags[i].name.replace(/ /g, '-')}" class="tag_item" style="background:${tags[i].color}">
                 <div class="upper_section" style="display: flex;justify-content:space-between;">
-                    <div class="tag_value" style="inline-block;">${tags[i].name}</div>
+                    <div class="tag_value" style="display:inline-block;padding-top:2px;">${tags[i].name}</div>
                     <div class="tag_remove" style="display:inline-block;margin-left:10px;">
                         <i class="fa fa-trash-o" style="font-size:14px;"></i>
                     </div>
                 </div>
-                <div class="lower_section" style="margin-top:2px;display:flex;justify-content:space-between;">
-                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:2px 4px;">
+                <div class="lower_section" style="margin-top:-2px;display:flex;justify-content:space-between;">
+                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:1px 4px;">
                         ${tagCount[tags[i].name]==null?0:tagCount[tags[i].name] + 1}
                     </div>
-                    <div class="tag_actions" style="float:right;">
-                        <i class="fa fa-arrows tag_move" style="font-size:13px;margin-right:0px;"></i>
-                        <i class="fa fa-pencil tag_edit" style="font-size:13px;margin-right:0px;"></i>
+                    <div class="tag_actions" style="float:right;display:flex;align-items:flex-start;margin-top:4px;">
+                        <i class="fa fa-arrows tag_move" style="font-size:13px;margin-right:4px;"></i>
+                        <i class="fa fa-pencil tag_edit" style="font-size:13px;margin-right:3px;"></i>
                         <i class="fa fa-paint-brush tag_select_color" style="font-size:13px;"></i>
                     </div>
                 </div>
@@ -222,7 +268,7 @@ function setTemplates() {
             `<div class="template" style="cursor:pointer;display:flex;justify-content:space-between;">
                 <div class="template_value" style="cursor:pointer;line-height:1.3;">${templates[i]}</div>
                 <div class="each_template_action" style="cursor:pointer;">
-                    <i class="fa fa-remove delete_template" style="font-size:16px;"></i>
+                    <i class="fa fa-trash-o delete_template" style="font-size:16px;"></i>
                 </div>
             </div>`
         );
@@ -277,14 +323,17 @@ function setTemplates() {
 
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 }
 
+
+let primaryColor = 'rgba(0, 141, 211)';
+let primaryColorHover = 'rgba(0, 141, 211, .5)';
 
 // Signup form action
 $('#signup_form').submit(function(e) {
@@ -379,12 +428,12 @@ function loadDataFromServer() {
             // Save tags to storage
             //chrome.storage.sync.set({ tags });
 
-            // Add tags to popup html
-            addTags();
-
             friendList = data.data.friends;
             // TODO: save friend list to storage
             //chrome.storage.sync.set({ friendList, messages: data.data.messages });
+
+            // Add tags to popup html
+            addTags();
 
             let t = data.data.templates, temp = [], mes = [], storageKey = {};
             //console.log(t);
@@ -440,8 +489,8 @@ function loadDataFromServer() {
 let changedFriend = null;
 function setTagFriendList(tag) {
     console.log('setTagFriendList');
-    let buttonStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;background:rgb(105,114,207);border-radius:4px;color:white;';
-    let buttonRemoveStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;background:white;border-radius:4px;color:rgba(105,114,207);border:1px solid rgb(105,114,207);;';
+    let buttonStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;border-radius:4px;color:white;';
+    let buttonRemoveStyle = 'cursor:pointer;font-size:13px;padding:4px 10px;padding-top:5px;background:white;border-radius:4px;color:rgba(0, 141, 211);border:1px solid rgba(0, 141, 211);';
     let selectStyle = `width:100px;margin-right:4px;margin-left:4px;appearance:none;color:white;`;
     let optionStyle = `color:white;padding:4px;`;
     let friends = [];
@@ -489,9 +538,9 @@ function setTagFriendList(tag) {
                             </select>
                         </div>
                         <div class="friend_action" style="display:flex;margin-top:10px;">
-                            <div class="friend_chat" style="${buttonStyle}margin-right:16px;">Chat</div>
-                            <div class="friend_note" style="${buttonStyle}margin-right:16px;">Note</div>
-                            <div class="friend_remove" style="${buttonRemoveStyle}">Remove</div>
+                            <div class="friend_action_button friend_chat" style="${buttonStyle}margin-right:16px;">Chat</div>
+                            <div class="friend_action_button friend_note" style="${buttonStyle}margin-right:16px;">Note</div>
+                            <div class="friend_action_button friend_remove" style="${buttonRemoveStyle}">Remove</div>
                         </div>
                     </div>
                 </div>`;
@@ -540,16 +589,21 @@ function setTagFriendList(tag) {
         e.stopPropagation();
         e.stopImmediatePropagation();
 
+        console.log(tags);
+
         let friendId = $(this).attr('id').split('-')[1];
+        console.log(friendId);
         let friendName = $(this).prev().text().trim();
         let friendImageUrl = $(this).parent().parent().prev().find('img').attr('src');
         let tag = $(this).val();
         let oldTag = $(this).data('oldValue');
 
-        let t1 = $('#tag-' + tag.replace(/ /g, '-')).find('.tag_friend_count');
-        let t2 = $('#tag-' + oldTag.replace(/ /g, '-')).find('.tag_friend_count');
+        let t1 = $('#' + $.escapeSelector('tag-' + tag.replace(/ /g, '-'))).find('.tag_friend_count');
+        let t2 = $('#' + $.escapeSelector('tag-' + oldTag.replace(/ /g, '-'))).find('.tag_friend_count');
+        console.log(t1, t2);
         let c1 = parseInt(t1.text().trim());
         let c2 = parseInt(t2.text().trim());
+        console.log(c1, c2);
         t1.text(++c1);
         t2.text(--c2);
 
@@ -625,15 +679,23 @@ function setTagFriends(tag) {
         currentTagSelected.text(tag);
     }
 
-    $('.tag_friends .tag_friend_item').each(function() {
-        let s = $(this).find('.friend_select').val().trim();
-        console.log(s);
-        if (s == tag) {
-            $(this).css('display', 'flex');
-        } else {
-            $(this).css('display', 'none');
-        }
-    });
+    let friends = $('.tag_friends .tag_friend_item');
+
+    if (friends != null && friends.length > 0) {
+        friends.each(function() {
+            let s = $(this).find('.friend_select').val().trim();
+            console.log(s);
+            if (s == tag) {
+                $(this).css('display', 'flex');
+            } else {
+                $(this).css('display', 'none');
+            }
+        });
+    }
+}
+
+function jq( myid ) {
+    return "#" + myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
 }
 
 
@@ -649,7 +711,10 @@ $('.tag_friend_box').on('click', '.friend_remove', function(e) {
     console.log()
     let tag = $('.friend_list_heading .current_tag_selected').text().trim();
     console.log(tag);
-    let tagCount = $('#tag-' + tag.replace(/ /g, '-')).find('.tag_friend_count');
+    //let iid = jq('tag-' + tag.replace(/ /g, '-'));
+    let iid = '#' + $.escapeSelector('tag-' + tag.replace(/ /g, '-'));
+    console.log(iid);
+    let tagCount = $(iid).find('.tag_friend_count');
     console.log(tagCount, tagCount.text());
     tagCount.text(parseInt(tagCount.text()) - 1);
 
@@ -682,7 +747,7 @@ $('#add_tag_form').submit(function(e) {
     e.preventDefault();
     $tagBox = $('.tag_box');
     $tagInput = $('#tag_input');
-    tag = $tagInput.val(); // Tag value
+    tag = $tagInput.val().trim().replace(/\s{2,}/g, ' '); // Tag value
 
     if (tag == '') {
         $('.overlay_view').css({
@@ -695,6 +760,24 @@ $('#add_tag_form').submit(function(e) {
             <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
         `);
         $('.overlay_text').html(`Tag cannot be empty.`);
+        $('.overlay_action').html(`
+            <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+        `);
+
+        return false;
+    }
+
+    if (tag == '...') {
+        $('.overlay_view').css({
+            'width': '300px',
+            'height': 'auto',
+        });
+        $('.overlay').css('display', 'block');
+
+        $('.overlay_heading').html(`
+            <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+        `);
+        $('.overlay_text').html(`Invalid tag name`);
         $('.overlay_action').html(`
             <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
         `);
@@ -728,6 +811,7 @@ $('#add_tag_form').submit(function(e) {
 
         let $tag = $('.tag_box .tag_item:nth-child(' + (editTagIndex + 1) + ')');
         $tag.find('.tag_value').text(tag);
+        $tag.attr('id', 'tag-' + tag.replace(/ /g, '-'));
 
         // Send tag to mesenger content.js for adding option tag to the select tag
         chrome.tabs.getAllInWindow(null, function(tabs) {
@@ -739,6 +823,8 @@ $('#add_tag_form').submit(function(e) {
                 }
             }
         });
+
+        $('.tag_input').attr('placeholder', 'Add a new tag');
     } else {
         // Cheack if tag is alredy present
         for (let i = 0; i < tags.length; i++) {
@@ -774,6 +860,26 @@ $('#add_tag_form').submit(function(e) {
 
         // Add tag to popup
         $tagBox.append(`
+            <div id="tag-${tag.replace(/ /g, '-')}" class="tag_item" style="background:${color}">
+                <div class="upper_section" style="display: flex;justify-content:space-between;">
+                    <div class="tag_value" style="display:inline-block;padding-top:2px;">${tag}</div>
+                    <div class="tag_remove" style="display:inline-block;margin-left:10px;">
+                        <i class="fa fa-trash-o" style="font-size:14px;"></i>
+                    </div>
+                </div>
+                <div class="lower_section" style="margin-top:-2px;display:flex;justify-content:space-between;">
+                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:1px 4px;">
+                        ${0}
+                    </div>
+                    <div class="tag_actions" style="float:right;display:flex;align-items:flex-start;margin-top:4px;">
+                        <i class="fa fa-arrows tag_move" style="font-size:13px;margin-right:4px;"></i>
+                        <i class="fa fa-pencil tag_edit" style="font-size:13px;margin-right:3px;"></i>
+                        <i class="fa fa-paint-brush tag_select_color" style="font-size:13px;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!--
             <div class="tag_item" style="background:${color}">
                 <div class="upper_section" style="display: flex;">
                     <div class="tag_value" style="inline-block;">${tag}</div>
@@ -782,7 +888,7 @@ $('#add_tag_form').submit(function(e) {
                     </div>
                 </div>
                 <div class="lower_section" style="margin-top:2px;display:flex;justify-content:space-between;">
-                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:2px 4px;">
+                    <div class="tag_friend_count" style="font-size:12px;margin-right:10px;margin-top:0px;background:rgb(0, 0, 0, .4);border-radius:7px;padding:1px 4px;">
                         ${0}
                     </div>
                     <div class="tag_actions" style="float:right;">
@@ -791,7 +897,7 @@ $('#add_tag_form').submit(function(e) {
                         <i class="fa fa-paint-brush tag_select_color" style="font-size:13px;"></i>
                     </div>
                 </div>
-            </div>`
+            </div> -->`
         );
 
         // Reset tag input field to blank
@@ -957,12 +1063,28 @@ function changeTagColor(color, $colorBox) {
         }
     });
 
-    let t1 = tagClickedForColor.find('.tag_value').text().trim();
-    let t2 = $('.tag_heading_for_friend_list').text().trim();
-    t2 = t2.substring(1, t2.length - 1);
-    if (t1 == t2) {
-        tagClickedForColor.find('.tag_value').trigger('click');
-    }
+    // let t1 = tagClickedForColor.find('.tag_value').text().trim();
+    // //let t2 = $('.tag_heading_for_friend_list').text().trim();
+    // let t2 = $('.current_tag_selected').text().trim();
+    // //t2 = t2.substring(1, t2.length - 1);
+    // if (t1 == t2) {
+    //     tagClickedForColor.find('.tag_value').trigger('click');
+    // }
+
+    let select = $(`.tag_friend_item .friend_select option[value='${tag}']`);
+    //console.log(select);
+    //console.log(select.html());
+    //console.log(color);
+    select.css('background-color', color);
+    let s = $(`.tag_friend_item .friend_select`);
+    s.each(function(i) {
+        let t = $(this).val();
+        if (t == tag) {
+            $(this).css('background-color', color);
+        }
+    });
+    //console.log(s);
+    //s.css('background-color', color);
 
     $.ajax({
         type: 'POST',
@@ -1028,14 +1150,13 @@ $('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
     removeOverlay();
 
     let tag = tagToBeDeleted.prev().text().trim();
-    console.log(tag);
-    tagToBeDeleted.parent().parent().remove();
+    tagToBeDeleted.closest('.tag_item').remove();
 
     chrome.storage.local.get('lastTagOpened', function(result) {
-        if (result.lastTagOpened == tag) {
+        if (result.lastTagOpened.trim() == tag) {
             //$('.messages').html('');
             $('.notes').html('');
-            setTagFriends('nhasjdwqkdjkasndkwljdlk');
+            setTagFriends('nhasjdwqkdjkasndkwljdlk'); // A random tag
 
             chrome.storage.local.set({ lastTagOpened: '' });
         }
@@ -1059,6 +1180,25 @@ $('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
         }
     });
 
+    let spliceIndex = [];
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].tag == tag) {
+            spliceIndex.push(i);
+        }
+    }
+    while(spliceIndex.length) {
+        friendList.splice(spliceIndex.pop(), 1);
+    }
+
+    let friends = $('.tag_friends .tag_friend_item .friend_select');
+    console.log(friends);
+    friends.each(function() {
+        let t = $(this).val();
+        console.log(t);
+        if (t == tag) {
+            $(this).closest('.tag_friend_item').remove();
+        }
+    });
 
     // Find and remove tag from tag array
     for (let i = 0; i < tags.length; i++) {
@@ -1068,11 +1208,14 @@ $('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
         }
     }
 
+    cleanFeiendList();
+    console.log(friendList);
     console.log(tags);
     // Save the tag to local stoarge
     chrome.storage.local.set({ tags });
 
-    //
+    $(`.tag_friend_item .friend_select option[value="${tag}"]`).remove();
+
     chrome.tabs.getAllInWindow(null, function(tabs) {
         // Find messenger tab
         for (let i = 0; i < tabs.length; i++) {
@@ -1112,20 +1255,11 @@ $('.tag_box').on('click', '.tag_value', function(e) {
     $('.tag_button').attr('value', 'Add tag');
     $('#tag_input').val('');
     $('#tag_input').attr('placeholder', 'Add a new tag');
+    $('#friend_search_input').val('');
 
     let tag = $(this).text();
-    //console.log(tag);
-
     chrome.storage.local.set({ lastTagOpened: tag });
     setTagFriends(tag);
-
-    //chrome.storage.local.get('lastTagOpened', function(result) {
-        //if (result.lastTagOpened != tag) {
-            //chrome.storage.local.set({ lastTagOpened: tag });
-
-            //setTagFriends(tag);
-        //}
-    //});
 });
 
 $('.tag_friend_box').on('click', '.friend_chat', function(e) {
@@ -1184,7 +1318,7 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
             let notes = friendList[i].notes;
             console.log(notes);
             let notesHtml = `<div style="margin-top:8px;font-size:14px;font-style:italic;">
-                                <span class="current_friend">Notes for ${friendName}</span>
+                                Notes for <span class="current_friend">${friendName}</span>
                             </div>`;
             if (notes != null) {
                 for (let j = 0; j < notes.length; j++) {
@@ -1192,7 +1326,7 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
                         `<div class="note" style="display:flex;justify-content:space-between;">
                             <div class="note_value">${notes[j]}</div>
                             <div class="each_note_action" style="display:flex;margin-left:6px;">
-                                <i class="fa fa-remove delete_note" style="font-size:16px;cursor:pointer;"></i>
+                                <i class="fa fa-trash-o delete_note" style="font-size:16px;cursor:pointer;"></i>
                             </div>
                         </div>`;
                 }
@@ -1204,15 +1338,15 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
 
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_note').css({
         'pointer-events': 'note',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 });
 
@@ -1227,15 +1361,15 @@ $('.note_box').on('click', '.add_note', function(e) {
     $('.notes').scrollTop($('.notes').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.save_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.cancel_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
 });
 
@@ -1245,6 +1379,7 @@ $('.note_box').on('click', '.save_note', function(e) {
     e.stopImmediatePropagation();
 
     let note = $('.note_textarea').val();
+    note = note.replace(/(?:\r\n|\r|\n)/g, '<br>');
     console.log(note);
     let friendName = $('.friend_active').find('.friend_name').text().trim();
     $('.note_textarea').remove();
@@ -1252,7 +1387,7 @@ $('.note_box').on('click', '.save_note', function(e) {
         `<div class="note" style="display:flex;justify-content:space-between;">
             <div class="note_value">${note}</div>
             <div class="each_note_action" style="display:flex;margin-left:6px;">
-                <i class="fa fa-remove delete_note" style="cursor:pointer;font-size:16px;"></i>
+                <i class="fa fa-trash-o delete_note" style="cursor:pointer;font-size:16px;"></i>
             </div>
         </div>`
     );
@@ -1277,15 +1412,15 @@ $('.note_box').on('click', '.save_note', function(e) {
 
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 
     $.ajax({
@@ -1312,7 +1447,7 @@ $('.note_box').on('click', '.delete_note', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let note = $(this).parent().prev().text().trim();
+    let note = $(this).closest('.note').find('.note_value').text().trim();
     let friendName = $('.notes:first-child').find('.current_friend').text().trim();
     $(this).parent().parent().remove();
 
@@ -1361,15 +1496,15 @@ $('.note_box').on('click', '.cancel_note', function(e) {
     $('.notes').find('textarea').remove();
     $('.add_note').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_note').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 });
 
@@ -1377,7 +1512,11 @@ $('.message_box').on('click', '.send_message', function(e) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let message = $(this).parent().prev().text();
+    let message = $(this).closest('.message').find('.message_value').html().trim();
+    if (message == null || message.indexOf('--template--') >= 0) {
+        message = $(this).closest('.message').find('img').attr('src');
+        window.close();
+    }
     console.log(message);
 
     // Send message to content.js to disable the extension
@@ -1401,7 +1540,13 @@ $('.message_box').on('click', '.delete_message', function(e) {
     console.log(template);
     let key = generateKey(template);
 
-    let message = $(this).parent().prev().text();
+    let message = $(this).closest('.message').find('.message_value').html();
+    console.log(message);
+    if (message == '' || message.indexOf('--template--') >= 0) {
+        message = $(this).closest('.message').find('img').attr('src');
+        let ind = message.lastIndexOf('/');
+        message = message.substring(ind + 1);
+    }
 
     console.log(message);
     $(this).parent().parent().remove();
@@ -1491,15 +1636,15 @@ $('.message_box').on('click', '.add_message', function(e) {
     $('.messages').scrollTop($('.messages').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': [primaryColorHover]
     });
     $('.save_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.cancel_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
 });
 
@@ -1509,6 +1654,7 @@ $('.message_box').on('click', '.save_message', function(e) {
     e.stopImmediatePropagation();
 
     let message = $('.message_textarea').val().trim();
+    message = message.replace(/(?:\r\n|\r|\n)/g, '<br>');
 
     if (message == '') {
         $('.overlay_view').css({
@@ -1534,7 +1680,7 @@ $('.message_box').on('click', '.save_message', function(e) {
             <div class="message_value" style="width:240px;line-height:1.3;">${message}</div>
             <div class="each_message_action" style="cursor:pointer;">
                 <i class="fa fa-paper-plane send_message" style="font-size:15px;margin-right:10px;"></i>
-                <i class="fa fa-remove delete_message" style="font-size:16px;"></i>
+                <i class="fa fa-trash-o delete_message" style="font-size:16px;"></i>
             </div>
         </div>`
     );
@@ -1552,15 +1698,15 @@ $('.message_box').on('click', '.save_message', function(e) {
 
     $('.add_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208), .5'
+        'background': primaryColorHover
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 
     // Send message to content.js to disable the extension
@@ -1592,21 +1738,35 @@ $('.message_box').on('click', '.save_message', function(e) {
     });
 });
 
+$('.messages').on('keypress', '.message_textarea', function(e) {
+    if (event.keyCode == 13 && !event.shiftKey && $(this).val().trim() != '') {
+        e.preventDefault();
+        $('.save_message').click();
+    }
+});
+
+$('.notes').on('keypress', '.note_textarea', function(e) {
+    if (event.keyCode == 13 && !event.shiftKey && $(this).val().trim() != '') {
+        e.preventDefault();
+        $('.save_note').click();
+    }
+});
+
 $('.message_box').on('click', '.cancel_message', function(e) {
     console.log('cancel message');
 
     $('.messages').find('textarea').remove();
     $('.add_message').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 });
 
@@ -1656,7 +1816,7 @@ $('.template_box').on('click', '.template', function(e) {
             <div class="message_value" style="width:240px;line-height:1.3;">${mes}</div>
             <div class="each_message_action" style="cursor:pointer;">
                 <i class="fa fa-paper-plane send_message" style="font-size:15px;margin-right:10px;"></i>
-                <i class="fa fa-remove delete_message" style="font-size:16px;"></i>
+                <i class="fa fa-trash-o delete_message" style="font-size:16px;"></i>
             </div>
         </div>`;
     }
@@ -1715,11 +1875,11 @@ $('.template_box').on('click', '.template', function(e) {
 
     $('.save_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_message').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 });
 
@@ -1731,15 +1891,15 @@ $('.template_box').on('click', '.add_template', function(e) {
     $('.templates').scrollTop($('.templates').height());
     $(this).css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.save_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.cancel_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
 });
 
@@ -1781,10 +1941,15 @@ $('.template_box').on('click', '.save_template', function(e) {
             `);
             $('.overlay_text').html(`Template with tha name <span style="font-weight:bold;">${template}</span> already exist.`);
             $('.overlay_action').html(`
-                <div class="secondary_button action_cancle" style="width:65px;">Cancel</div>
+                <div class="secondary_button action_dublicate_templaye_cancle" style="width:65px;">Cancel</div>
             `);
+            $('.template_textarea').blur();
 
-            
+            $('.overlay').on('click', function(e) {
+                removeOverlay();
+                $('.template_textarea').focus();
+            });
+
             return false;
         }
     }
@@ -1794,7 +1959,7 @@ $('.template_box').on('click', '.save_template', function(e) {
         `<div class="template" style="display:flex;justify-content:space-between;">
             <div class="template_value" style="cursor:pointer;line-height:1.3;">${template}</div>
             <div class="each_template_action" style="cursor:pointer;">
-                <i class="fa fa-remove delete_template" style="font-size:16px;"></i>
+                <i class="fa fa-trash-o delete_template" style="font-size:16px;"></i>
             </div>
         </div>`
     );
@@ -1805,15 +1970,15 @@ $('.template_box').on('click', '.save_template', function(e) {
 
     $('.add_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 
     // Send message to content.js to disable the extension
@@ -1848,33 +2013,59 @@ $('.template_box').on('click', '.cancel_template', function(e) {
     $('.templates').find('textarea').remove();
     $('.add_template').css({
         'pointer-events': 'auto',
-        'background': 'rgb(81, 108, 208)'
+        'background': primaryColor
     });
     $('.save_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
     $('.cancel_template').css({
         'pointer-events': 'none',
-        'background': 'rgb(81, 108, 208, .5)'
+        'background': primaryColorHover
     });
 });
 
+let templateToBeDeleted = null;
 $('.template_box').on('click', '.delete_template', function(e) {
     console.log('delete template');
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    let template = $(this).parent().prev().text();
-    $(this).parent().parent().remove();
+    templateToBeDeleted = $(this).closest('.template');
+    let template = templateToBeDeleted.find('.template_value').text().trim();
+
+    $('.overlay_view').css({
+        'width': '300px',
+        'height': 'auto',
+    });
+    $('.overlay').css('display', 'block');
+
+    $('.overlay_heading').html(`
+        <i class="fa fa-warning" style="color:#ff9966"></i><span style="color:#ff9966;margin-left:8px;">Error</span>
+    `);
+    $('.overlay_text').html(`Are you sure you want to delete <span style="font-weight:bold;">${template}</span>?`);
+    $('.overlay_action').html(`
+        <div class="secondary_button action_delete_template_yes" style="width:65px;margin-right:15px;">Yes</div>
+        <div class="secondary_button action_delete_template_no" style="width:65px;">No</div>
+    `);
+
+    templateToBeDeleted = $(this).closest('.template');
+});
+
+$('.overlay_action').on('click', '.action_delete_template_yes', function(e) {
+    let template = templateToBeDeleted.find('.template_value').text().trim();
+    templateToBeDeleted.remove();
     for (let i = 0; i < templates.length; i++) {
         if (templates[i] == template) {
             templates.splice(i, 1);
+            delete messages[generateKey(template)];
             break;
         }
     }
 
     chrome.storage.local.set({ templates });
+    chrome.storage.local.remove(generateKey(template));
+
 
     // Send message to content.js to disable the extension
     chrome.tabs.getAllInWindow(null, function(tabs) {
@@ -1900,6 +2091,12 @@ $('.template_box').on('click', '.delete_template', function(e) {
             console.log('Error removing template to friend');
         }
     });
+
+    removeOverlay();
+});
+
+$('.overlay_action').on('click', '.action_delete_template_no', function(e) {
+    removeOverlay();
 });
 
 $('.tag_box').on('click', '.select_color_box', function(e) {
@@ -1916,7 +2113,6 @@ $('body').on('input', 'textarea', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
 });
-
 
 $('.select_asbox').click(() => {
     // Send message to content.js to disable the extension
@@ -1945,9 +2141,30 @@ $('#select_checkbox').change(function(e) {
 });
 
 $('.chat_box').click(() => {
-    chrome.tabs.create({
-        url: chrome.runtime.getURL("window.html")
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        let flag = false;
+        for (let i = 0; i < tabs.length; i++) {
+            // Find messenger tab
+            if (tabs[i].title == 'Pepper messages') {
+                console.log(tabs[i]);
+                chrome.tabs.update(tabs[i].id, {active: true}, function () {
+                    console.log('AZAZ');
+                });
+                flag = true;
+                break;
+            }
+        }
+
+        if (!flag) {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL("window.html")
+            });
+        }
     });
+
+    // chrome.tabs.create({
+    //     url: chrome.runtime.getURL("window.html")
+    // });
 });
 
 $('.logout_box').click(() => {
@@ -1976,6 +2193,10 @@ $('.logout_box').click(() => {
             }
         });
     });
+});
+
+$('.sync_box').click(() => {
+    loadDataFromServer();
 });
 
 $('.templates').on('keypress', '.template_textarea', function(e) {

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
     <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
@@ -23,29 +24,44 @@
     </div>
 
     <div class="signup_box" style="display:none;">
-        <div class="primary-text signup_text">Signup to Messenger Extension</div>
+        <div class="pepper_logo_box" style="margin-bottom:20px;">
+            <img class="pepper_logo" src="images/128.png" alt="">
+        </div>
+        <!-- <div class="primary-text signup_text">Signup to Messenger Extension</div> -->
         <form id="signup_form" action="">
-            <div class="label">Email</div>
-            <input id="email_signup" class="long_input" type="text" name="email" placeholder="email" autocomplete="off"></br>
-            <div class="label">Password</div>
-            <input id="password_signup" class="long_input" type="password" name="password" placeholder="password" autocomplete="off"></br>
-            <div class="label">Confirm password</div>
-            <input id="confirm_password_signup" class="long_input" type="password" name="confirmPassword" placeholder="password" autocomplete="off"></br>
-            <input class="primary-button signup_button" type="submit" value="Signup"> 
+            <!-- <div class="label">Email</div> -->
+            <input id="email_signup" class="long_input" type="text" name="email" placeholder="Email" autocomplete="off" style="margin-bottom:20px;"></br>
+            <!-- <div class="label">Password</div> -->
+            <input id="password_signup" class="long_input" type="password" name="password" placeholder="Password" autocomplete="off" style="margin-bottom:20px;"></br>
+            <!-- <div class="label">Confirm password</div> -->
+            <input id="confirm_password_signup" class="long_input" type="password" name="confirmPassword" placeholder="Confirm Password" autocomplete="off" style="margin-bottom:20px;"></br>
+            <input class="primary-button signup_button" type="submit" value="Sign up"> 
         </form>
-        <div class="go_to go_to_login">Login to your account</div>
+        <div class="lower_section">
+            <div class="go_to go_to_login">Login</div>
+            <div class="go_to forgot_password">Forgot password</div>
+            <div class="go_to support">Support</div>
+        </div>
     </div>
 
     <div class="login_box" style="display:none;">
-        <div class="primary-text login_text">Login to Messenger Extension</div>
+        <div class="pepper_logo_box" style="margin-bottom:20px;">
+            <img class="pepper_logo" src="images/128.png" alt="">
+        </div>
+        <!-- <div class="primary-text login_text">Login to Messenger Extension</div> -->
         <form id="login_form" action="">
-            <div class="label">Email</div>
-            <input id="email_login" class="long_input" type="text" name="email" placeholder="email" autocomplete="off"></br>
-            <div class="label">Password</div>
-            <input id="password_login" class="long_input" type="password" name="password" placeholder="password" autocomplete="off"></br>
+            <!-- <div class="label">Email</div> -->
+            <input id="email_login" class="long_input" type="text" name="email" placeholder="Email" autocomplete="off" style="margin-bottom:20px;"></br>
+            <!-- <div class="label">Password</div> -->
+            <input id="password_login" class="long_input" type="password" name="password" placeholder="Password" autocomplete="off" style="margin-bottom:20px;"></br>
             <input class="primary-button login_button" type="submit" value="Login"> 
         </form>
-        <div class="go_to go_to_signup">Create a new account</div>
+        <div class="lower_section">
+            <div class="go_to go_to_signup">Signup</div>
+            <div class="go_to forgot_password">Forgot password</div>
+            <div class="go_to support">Support</div>
+        </div>
+        
     </div>
 
     <div class="main_content" style="display:none">
@@ -74,7 +90,13 @@
             </form>
 
             <div class="main_actions">
-                <input id="select_checkbox" type="checkbox" class="select_checkbox">
+                <div class="crm_toggle" style="position:relative;" title="Toggle CRM">
+                    <input id="select_checkbox" type="checkbox" class="select_checkbox">
+                    <!-- <div class="crm_toggle_text" style="width:100px;position:absolute;top:27px;left:-10px;">CRM Toggle</div> -->
+                </div>  
+                <!-- <div class="action_box sync_box" title="Sync">
+                    <i class="fa fa-refresh"></i>
+                </div> -->
                 <div class="action_box chat_box" title="Message">
                     <i class="fa fa-envelope"></i>
                 </div>

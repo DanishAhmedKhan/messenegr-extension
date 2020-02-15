@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Pepper messages</title>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="window.css">
@@ -26,7 +27,7 @@
             <div class="nav_header">
                 <div class="nav_header_user">
                     <div class="nav_header_user_image">
-                        <img class="image circular_image" src="images/favicon.png" alt="">
+                        <img class="image circular_image" src="images/128.png" alt="">
                     </div>
                     <div class="nav_header_user_detail">
                         <div class="nav_header_user_name">Pepper</div>
@@ -38,548 +39,1895 @@
                 <div class="nav_menu_list">
                     <!-- <div class="nav_menu_item nav_item_tag">Tags</div> -->
                     <div class="nav_menu_item nav_item_template">Templates</div>
-                    <!-- <div class="nav_menu_item nav_item_setting">Setting</div> -->
+                    <div class="nav_menu_item nav_item_friends">Friends</div>
                 </div>
             </div>
         </section>
 
         <section id="template" class="content">
-            <div class="add_template">
+            <!-- <div class="add_template">
                 <div class="add_template_text">Add a new message template</div>
                 <div class="add_template_form">
                     <input type="text" class="input add_template_input" placeholder="New template">
                     <div class="primary_button add_template_button">Add Template</div>
                 </div>
-            </div>
+            </div> -->
             <div class="list">
-                <div class="templates"></div>
-                <div class="message_box">
-                    <div class="messages"></div>
-                    <div class="message_textarea_box">
-                        <textarea class="message_textarea" placeholder="New message" rows="1"></textarea>
-                        <div class="secondary_button emoji_button">
-                            <div>Emoji</div>
-                            <div class="emoji_box_container" id="emoji_box">
-                                <div class="emoji_box_polygon">
-                                    <div class="emoji_box" style="background:red;">
-                                        <table>
-                                            <tr>
-                                                <th>&#128512;</th>
-                                                <th>&#128513;</th>
-                                                <th>&#128514;</th>
-                                                <th>&#128515;</th>
-                                                <th>&#128516;</th>
-                                                <th>&#128517;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128518;</th>
-                                                <th>&#128519;</th>
-                                                <th>&#128520;</th>
-                                                <th>&#128521;</th>
-                                                <th>&#128522;</th>
-                                                <th>&#128523;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128524;</th>
-                                                <th>&#128525;</th>
-                                                <th>&#128526;</th>
-                                                <th>&#128527;</th>
-                                                <th>&#128528;</th>
-                                                <th>&#128529;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128530;</th>
-                                                <th>&#128531;</th>
-                                                <th>&#128532;</th>
-                                                <th>&#128533;</th>
-                                                <th>&#128534;</th>
-                                                <th>&#128535;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128536;</th>
-                                                <th>&#128537;</th>
-                                                <th>&#128538;</th>
-                                                <th>&#128539;</th>
-                                                <th>&#128540;</th>
-                                                <th>&#128541;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128542;</th>
-                                                <th>&#128543;</th>
-                                                <th>&#128544;</th>
-                                                <th>&#128545;</th>
-                                                <th>&#128546;</th>
-                                                <th>&#128547;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128548;</th>
-                                                <th>&#128549;</th>
-                                                <th>&#128550;</th>
-                                                <th>&#128551;</th>
-                                                <th>&#128552;</th>
-                                                <th>&#128553;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128554;</th>
-                                                <th>&#128555;</th>
-                                                <th>&#128556;</th>
-                                                <th>&#128557;</th>
-                                                <th>&#128558;</th>
-                                                <th>&#128559;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128560;</th>
-                                                <th>&#128561;</th>
-                                                <th>&#128562;</th>
-                                                <th>&#128563;</th>
-                                                <th>&#128564;</th>
-                                                <th>&#128565;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128566;</th>
-                                                <th>&#128567;</th>
-                                                <th>&#128568;</th>
-                                                <th>&#128569;</th>
-                                                <th>&#128570;</th>
-                                                <th>&#128571;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128572;</th>
-                                                <th>&#128573;</th>
-                                                <th>&#128574;</th>
-                                                <th>&#128575;</th>
-                                                <th>&#128576;</th>
-                                                <th>&#128577;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128578;</th>
-                                                <th>&#128579;</th>
-                                                <th>&#128580;</th>
-                                                <th>&#128581;</th>
-                                                <th>&#128582;</th>
-                                                <th>&#128583;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128584;</th>
-                                                <th>&#128585;</th>
-                                                <th>&#128586;</th>
-                                                <th>&#128587;</th>
-                                                <th>&#128588;</th>
-                                                <th>&#128589;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128590;</th>
-                                                <th>&#128591;</th>
-                                                <th>&#128592;</th>
-                                                <th>&#128593;</th>
-                                                <th>&#128594;</th>
-                                                <th>&#128595;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128596;</th>
-                                                <th>&#128597;</th>
-                                                <th>&#128598;</th>
-                                                <th>&#128599;</th>
-                                                <th>&#128600;</th>
-                                                <th>&#128501;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128602;</th>
-                                                <th>&#128603;</th>
-                                                <th>&#128604;</th>
-                                                <th>&#128605;</th>
-                                                <th>&#128606;</th>
-                                                <th>&#128607;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128608;</th>
-                                                <th>&#128609;</th>
-                                                <th>&#128610;</th>
-                                                <th>&#128611;</th>
-                                                <th>&#128612;</th>
-                                                <th>&#128613;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128614;</th>
-                                                <th>&#128615;</th>
-                                                <th>&#128616;</th>
-                                                <th>&#128617;</th>
-                                                <th>&#128618;</th>
-                                                <th>&#128619;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128620;</th>
-                                                <th>&#128621;</th>
-                                                <th>&#128622;</th>
-                                                <th>&#128623;</th>
-                                                <th>&#128624;</th>
-                                                <th>&#128625;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128626;</th>
-                                                <th>&#128627;</th>
-                                                <th>&#128628;</th>
-                                                <th>&#128629;</th>
-                                                <th>&#128630;</th>
-                                                <th>&#128631;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128632;</th>
-                                                <th>&#128633;</th>
-                                                <th>&#128634;</th>
-                                                <th>&#128635;</th>
-                                                <th>&#128636;</th>
-                                                <th>&#128637;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128638;</th>
-                                                <th>&#128639;</th>
-                                                <th>&#128640;</th>
-                                                <th>&#128641;</th>
-                                                <th>&#128642;</th>
-                                                <th>&#128643;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128644;</th>
-                                                <th>&#128645;</th>
-                                                <th>&#128646;</th>
-                                                <th>&#128647;</th>
-                                                <th>&#128648;</th>
-                                                <th>&#128649;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128650;</th>
-                                                <th>&#128651;</th>
-                                                <th>&#128652;</th>
-                                                <th>&#128553;</th>
-                                                <th>&#128654;</th>
-                                                <th>&#128655;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128656;</th>
-                                                <th>&#128657;</th>
-                                                <th>&#128658;</th>
-                                                <th>&#128559;</th>
-                                                <th>&#128660;</th>
-                                                <th>&#128661;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128662;</th>
-                                                <th>&#128663;</th>
-                                                <th>&#128664;</th>
-                                                <th>&#128565;</th>
-                                                <th>&#128666;</th>
-                                                <th>&#128667;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128668;</th>
-                                                <th>&#128669;</th>
-                                                <th>&#128670;</th>
-                                                <th>&#128571;</th>
-                                                <th>&#128672;</th>
-                                                <th>&#128673;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128674;</th>
-                                                <th>&#128675;</th>
-                                                <th>&#128676;</th>
-                                                <th>&#128577;</th>
-                                                <th>&#128678;</th>
-                                                <th>&#128679;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128680;</th>
-                                                <th>&#128681;</th>
-                                                <th>&#128682;</th>
-                                                <th>&#128583;</th>
-                                                <th>&#128684;</th>
-                                                <th>&#128685;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128686;</th>
-                                                <th>&#128687;</th>
-                                                <th>&#128688;</th>
-                                                <th>&#128589;</th>
-                                                <th>&#128690;</th>
-                                                <th>&#128691;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128692;</th>
-                                                <th>&#128693;</th>
-                                                <th>&#128694;</th>
-                                                <th>&#128595;</th>
-                                                <th>&#128696;</th>
-                                                <th>&#128697;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128698;</th>
-                                                <th>&#128699;</th>
-                                                <th>&#128700;</th>
-                                                <th>&#128701;</th>
-                                                <th>&#128702;</th>
-                                                <th>&#128703;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128704;</th>
-                                                <th>&#128705;</th>
-                                                <th>&#128706;</th>
-                                                <th>&#128707;</th>
-                                                <th>&#128708;</th>
-                                                <th>&#128709;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128710;</th>
-                                                <th>&#128711;</th>
-                                                <th>&#128712;</th>
-                                                <th>&#128713;</th>
-                                                <th>&#128714;</th>
-                                                <th>&#128715;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128716;</th>
-                                                <th>&#128717;</th>
-                                                <th>&#128718;</th>
-                                                <th>&#128719;</th>
-                                                <th>&#128720;</th>
-                                                <th>&#128721;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128722;</th>
-                                                <th>&#128723;</th>
-                                                <th>&#128724;</th>
-                                                <th>&#128725;</th>
-                                                <th>&#128726;</th>
-                                                <th>&#128727;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128728;</th>
-                                                <th>&#128729;</th>
-                                                <th>&#128730;</th>
-                                                <th>&#128731;</th>
-                                                <th>&#128732;</th>
-                                                <th>&#128733;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128734;</th>
-                                                <th>&#128735;</th>
-                                                <th>&#128736;</th>
-                                                <th>&#128737;</th>
-                                                <th>&#128738;</th>
-                                                <th>&#128739;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128740;</th>
-                                                <th>&#128741;</th>
-                                                <th>&#128742;</th>
-                                                <th>&#128743;</th>
-                                                <th>&#128744;</th>
-                                                <th>&#128745;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128746;</th>
-                                                <th>&#128747;</th>
-                                                <th>&#128748;</th>
-                                                <th>&#128749;</th>
-                                                <th>&#128750;</th>
-                                                <th>&#128751;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128752;</th>
-                                                <th>&#128753;</th>
-                                                <th>&#128754;</th>
-                                                <th>&#128755;</th>
-                                                <th>&#128757;</th>
-                                                <th>&#128758;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128759;</th>
-                                                <th>&#128760;</th>
-                                                <th>&#128761;</th>
-                                                <th>&#128762;</th>
-                                                <th>&#128763;</th>
-                                                <th>&#128764;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128765;</th>
-                                                <th>&#128766;</th>
-                                                <th>&#128767;</th>
-                                                <th>&#128768;</th>
-                                                <th>&#128769;</th>
-                                                <th>&#128770;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128771;</th>
-                                                <th>&#128772;</th>
-                                                <th>&#128773;</th>
-                                                <th>&#128774;</th>
-                                                <th>&#128775;</th>
-                                                <th>&#128776;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128777;</th>
-                                                <th>&#128778;</th>
-                                                <th>&#128779;</th>
-                                                <th>&#128780;</th>
-                                                <th>&#128781;</th>
-                                                <th>&#128782;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128783;</th>
-                                                <th>&#128784;</th>
-                                                <th>&#128785;</th>
-                                                <th>&#128786;</th>
-                                                <th>&#128787;</th>
-                                                <th>&#128788;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128789;</th>
-                                                <th>&#128790;</th>
-                                                <th>&#128791;</th>
-                                                <th>&#128792;</th>
-                                                <th>&#128793;</th>
-                                                <th>&#128794;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128795;</th>
-                                                <th>&#128796;</th>
-                                                <th>&#128797;</th>
-                                                <th>&#128798;</th>
-                                                <th>&#128799;</th>
-                                                <th>&#128800;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128801;</th>
-                                                <th>&#128802;</th>
-                                                <th>&#128803;</th>
-                                                <th>&#128804;</th>
-                                                <th>&#128805;</th>
-                                                <th>&#128806;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128807;</th>
-                                                <th>&#128808;</th>
-                                                <th>&#128809;</th>
-                                                <th>&#128810;</th>
-                                                <th>&#128811;</th>
-                                                <th>&#128812;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128813;</th>
-                                                <th>&#128814;</th>
-                                                <th>&#128815;</th>
-                                                <th>&#128816;</th>
-                                                <th>&#128817;</th>
-                                                <th>&#128818;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128819;</th>
-                                                <th>&#128820;</th>
-                                                <th>&#128821;</th>
-                                                <th>&#128822;</th>
-                                                <th>&#128823;</th>
-                                                <th>&#128824;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128825;</th>
-                                                <th>&#128826;</th>
-                                                <th>&#128827;</th>
-                                                <th>&#128828;</th>
-                                                <th>&#128829;</th>
-                                                <th>&#128830;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128831;</th>
-                                                <th>&#128832;</th>
-                                                <th>&#128833;</th>
-                                                <th>&#128834;</th>
-                                                <th>&#128835;</th>
-                                                <th>&#128836;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128837;</th>
-                                                <th>&#128838;</th>
-                                                <th>&#128839;</th>
-                                                <th>&#128840;</th>
-                                                <th>&#128841;</th>
-                                                <th>&#128842;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128843;</th>
-                                                <th>&#128844;</th>
-                                                <th>&#128845;</th>
-                                                <th>&#128846;</th>
-                                                <th>&#128847;</th>
-                                                <th>&#128848;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#128849;</th>
-                                                <th>&#128850;</th>
-                                                <th>&#128851;</th>
-                                                <th>&#128852;</th>
-                                                <th>&#128853;</th>
-                                                <th>&#128854;</th>
-                                            </tr>
+                <div class="first_box">
+                    <div class="template_heading">Templates</div>
+                    <div class="templates"></div>
 
-                                            <tr>
-                                                <th>&#129296;</th>
-                                                <th>&#129297;</th>
-                                                <th>&#129298;</th>
-                                                <th>&#129299;</th>
-                                                <th>&#129300;</th>
-                                                <th>&#129301;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#129302;</th>
-                                                <th>&#129303;</th>
-                                                <th>&#129304;</th>
-                                                <th>&#129305;</th>
-                                                <th>&#129306;</th>
-                                                <th>&#129307;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#129308;</th>
-                                                <th>&#129309;</th>
-                                                <th>&#129310;</th>
-                                                <th>&#129311;</th>
-                                                <th>&#129312;</th>
-                                                <th>&#129313;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#129314;</th>
-                                                <th>&#129315;</th>
-                                                <th>&#129316;</th>
-                                                <th>&#129317;</th>
-                                                <th>&#129318;</th>
-                                                <th>&#129319;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#129320;</th>
-                                                <th>&#129321;</th>
-                                                <th>&#129322;</th>
-                                                <th>&#129323;</th>
-                                                <th>&#129324;</th>
-                                                <th>&#129325;</th>
-                                            </tr>
-                                            <tr>
-                                                <th>&#129326;</th>
-                                                <th>&#129327;</th>
-                                                <th>&#129488;</th>
-                                                <th>&#129305;</th>
-                                                <th>&#129306;</th>
-                                                <th>&#129307;</th>
-                                            </tr>
-                                        </table>
+                    <div class="add_template">
+                        <!-- <div class="add_template_text">Add a new message template</div> -->
+                        <div class="add_template_form">
+                            <input type="text" class="input add_template_input" placeholder="New template">
+                            <div class="primary_button add_template_button">Add Template</div>
+                        </div>
+                    </div> 
+                </div>
+                
+                <div class="second_box">
+                    <div class="message_heading">Messages</div>
+
+                    <div class="message_box">
+                        <div class="messages"></div>
+                        <div class="message_textarea_box">
+                            <textarea class="message_textarea" placeholder="New message" rows="1"></textarea>
+                            <div class="secondary_button emoji_button">
+                                <div class="emoji_button_main">Emoji</div>
+                                <div class="emoji_box_container" id="emoji_box">
+                                    <div class="emoji_box_polygon">
+                                        <div class="emoji_box">
+                                            <div class="emoji_box_section emoji_box_section_1" style="display:block;">
+                                                <table>
+                                                    <tr class="line_1">
+                                                        <th>&#128512;</th>
+                                                        <th>&#128513;</th>
+                                                        <th>&#128514;</th>
+                                                        <th>&#129315;</th>
+                                                        <th>&#128515;</th>
+                                                        <th>&#128516;</th>
+                                                    </tr>
+                                                    <tr class="line_2">
+                                                        <th>&#128517;</th>
+                                                        <th>&#128518;</th>
+                                                        <th>&#128521;</th>
+                                                        <th>&#128522;</th>
+                                                        <th>&#128523;</th>
+                                                        <th>&#128526;</th>
+                                                    </tr>
+                                                    <tr class="line_3">
+                                                        <th>&#128525;</th>
+                                                        <th>&#128536;</th>
+                                                        <th>&#128535;</th>
+                                                        <th>&#128537;</th>
+                                                        <th>&#128538;</th>
+                                                        <th>&#128578;</th>
+                                                    </tr>
+                                                    <tr class="line_4">
+                                                        <th>&#129303;</th>
+                                                        <th>&#129300;</th>
+                                                        <th>&#128528;</th>
+                                                        <th>&#128529;</th>
+                                                        <th>&#128566;</th>
+                                                        <th>&#128580;</th>
+                                                    </tr>
+                                                    <tr class="line_5">
+                                                        <th>&#128527;</th>
+                                                        <th>&#128547;</th>
+                                                        <th>&#128549;</th>
+                                                        <th>&#128558;</th>
+                                                        <th>&#129296;</th>
+                                                        <th>&#128559;</th>
+                                                    </tr>
+                                                    <tr class="line_6">
+                                                        <th>&#128554;</th>
+                                                        <th>&#128555;</th>
+                                                        <th>&#128564;</th>
+                                                        <th>&#128524;</th>
+                                                        <th>&#129299;</th>
+                                                        <th>&#128539;</th>
+                                                    </tr>
+                                                    <tr class="line_7">
+                                                        <th>&#128540;</th>
+                                                        <th>&#128541;</th>
+                                                        <th>&#129316;</th>
+                                                        <th>&#128530;</th>
+                                                        <th>&#128531;</th>
+                                                        <th>&#128532;</th>
+                                                    </tr>
+                                                    <tr class="line_8">
+                                                        <th>&#128533;</th>
+                                                        <th>&#128579;</th>
+                                                        <th>&#129297;</th>
+                                                        <th>&#128562;</th>
+                                                        <th>&#128577;</th>
+                                                        <th>&#128534;</th>
+                                                    </tr>
+                                                    <tr class="line_9">
+                                                        <th>&#128542;</th>
+                                                        <th>&#128543;</th>
+                                                        <th>&#128548;</th>
+                                                        <th>&#128546;</th>
+                                                        <th>&#128557;</th>
+                                                        <th>&#128550;</th>
+                                                    </tr>
+                                                    <tr class="line_10">
+                                                        <th>&#128551;</th>
+                                                        <th>&#128552;</th>
+                                                        <th>&#128553;</th>
+                                                        <th>&#128556;</th>
+                                                        <th>&#128560;</th>
+                                                        <th>&#128561;</th>
+                                                    </tr>
+                                                    <tr class="line_11">
+                                                        <th>&#128563;</th>
+                                                        <th>&#128565;</th>
+                                                        <th>&#128545;</th>
+                                                        <th>&#128544;</th>
+                                                        <th>&#128519;</th>
+                                                        <th>&#129312;</th>
+                                                    </tr>
+                                                    <tr class="line_12">
+                                                        <th>&#129313;</th>
+                                                        <th>&#129317;</th>
+                                                        <th>&#128567;</th>
+                                                        <th>&#129298;</th>
+                                                        <th>&#129301;</th>
+                                                        <th>&#129314;</th>
+                                                    </tr>
+                                                    <tr class="line_13">
+                                                        <th>&#129319;</th>
+                                                        <th>&#128520;</th>
+                                                        <th>&#128127;</th>
+                                                        <th>&#128121;</th>
+                                                        <th>&#128122;</th>
+                                                        <th>&#128128;</th>
+                                                    </tr>
+                                                    <tr class="line_14">
+                                                        <th>&#128123;</th>
+                                                        <th>&#128125;</th>
+                                                        <th>&#128126;</th>
+                                                        <th>&#129302;</th>
+                                                        <th>&#128169;</th>
+                                                        <th>&#128570;</th>
+                                                    </tr>
+                                                    <tr class="line_15">
+                                                        <th>&#128568;</th>
+                                                        <th>&#128569;</th>
+                                                        <th>&#128571;</th>
+                                                        <th>&#128572;</th>
+                                                        <th>&#128573;</th>
+                                                        <th>&#128576;</th>
+                                                    </tr>
+                                                    <tr class="line_16">
+                                                        <th>&#128575;</th>
+                                                        <th>&#128574;</th>
+                                                        <th>&#128584;</th>
+                                                        <th>&#128585;</th>
+                                                        <th>&#128586;</th>
+                                                        <th>&#128102;</th>
+                                                    </tr>
+                                                    <tr class="line_17">
+                                                        <th>&#128102;</th>
+                                                        <th>&#128102;</th>
+                                                        <th>&#128102;</th>
+                                                        <th>&#128103;</th>
+                                                        <th>&#128103;</th>
+                                                        <th>&#128103;</th>
+                                                    </tr>
+                                                    <tr class="line_18">
+                                                        <th>&#128103;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128105;</th>
+                                                    </tr>
+                                                    <tr class="line_19">
+                                                        <th>&#128105;</th>
+                                                        <th>&#128105;</th>
+                                                        <th>&#128105;</th>
+                                                        <th>&#128116;</th>
+                                                        <th>&#128116;</th>
+                                                        <th>&#128116;</th>
+                                                    </tr>
+                                                    <tr class="line_20">
+                                                        <th>&#128117;</th>
+                                                        <th>&#128117;</th>
+                                                        <th>&#128117;</th>
+                                                        <th>&#128118;</th>
+                                                        <th>&#128118;</th>
+                                                        <th>&#128118;</th>
+                                                    </tr>
+                                                    <tr class="line_21">
+                                                        <th>&#128124;</th>
+                                                        <th>&#128124;</th>
+                                                        <th>&#128124;</th>
+                                                        <th>&#128110;</th>
+                                                        <th>&#128373;</th>
+                                                        <th>&#128130;</th>
+                                                    </tr>
+                                                    <tr class="line_22">
+                                                        <th>&#128119;</th>
+                                                        <th>&#128115;</th>
+                                                        <th>&#128113;</th>
+                                                        <th>&#127877;</th>
+                                                        <th>&#129334;</th>
+                                                        <th>&#128120;</th>
+                                                    </tr>
+                                                    <tr class="line_23">
+                                                        <th>&#129332;</th>
+                                                        <th>&#128112;</th>
+                                                        <th>&#129333;</th>
+                                                        <th>&#129328;</th>
+                                                        <th>&#128114;</th>
+                                                        <th>&#128589;</th>
+                                                    </tr>
+                                                    <tr class="line_24">
+                                                        <th>&#128590;</th>
+                                                        <th>&#128581;</th>
+                                                        <th>&#128582;</th>
+                                                        <th>&#128129;</th>
+                                                        <th>&#128587;</th>
+                                                        <th>&#128583;</th>
+                                                    </tr>
+                                                    <tr class="line_25">
+                                                        <th>&#129318;</th>
+                                                        <th>&#129335;</th>
+                                                        <th>&#128134;</th>
+                                                        <th>&#128135;</th>
+                                                        <th>&#128694;</th>
+                                                        <th>&#127939;</th>
+                                                    </tr>
+                                                    <tr class="line_26">
+                                                        <th>&#128131;</th>
+                                                        <th>&#128378;</th>
+                                                        <th>&#128111;</th>
+                                                        <th>&#128372;</th>
+                                                        <th>&#128100;</th>
+                                                        <th>&#128101;</th>
+                                                    </tr>
+                                                    <tr class="line_27">
+                                                        <th>&#128108;</th>
+                                                        <th>&#128143;</th>
+                                                        <th>&#128105;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128104;</th>
+                                                        <th>&#128104;</th>
+                                                    </tr>
+                                                    <tr class="line_28">
+                                                        <th>&#128105;</th>
+                                                        <th>&#128170;</th>
+                                                        <th>&#128170;</th>
+                                                        <th>&#128170;</th>
+                                                        <th>&#129331;</th>
+                                                        <th>&#128072;</th>
+                                                    </tr>
+                                                    <tr class="line_29">
+                                                        <th>&#128072;</th>
+                                                        <th>&#128072;</th>
+                                                        <th>&#128073;</th>
+                                                        <th>&#128073;</th>
+                                                        <th>&#128073;</th>
+                                                        <th>&#9757;</th>
+                                                    </tr>
+                                                    <tr class="line_30">
+                                                        <th>&#9757;</th>
+                                                        <th>&#9757;</th>
+                                                        <th>&#9996;</th>
+                                                        <th>&#129310;</th>
+                                                        <th>&#128406;</th>
+                                                        <th>&#129304;</th>
+                                                    </tr>
+                                                    <tr class="line_31">
+                                                        <th>&#129305;</th>
+                                                        <th>&#9995;</th>
+                                                        <th>&#128076;</th>
+                                                        <th>&#128077;</th>
+                                                        <th>&#128078;</th>
+                                                        <th>&#9994;</th>
+                                                    </tr>
+                                                    <tr class="line_32">
+                                                        <th>&#128074;</th>
+                                                        <th>&#129307;</th>
+                                                        <th>&#129308;</th>
+                                                        <th>&#129306;</th>
+                                                        <th>&#128075;</th>
+                                                        <th>&#128079;</th>
+                                                    </tr>
+                                                    <tr class="line_33">
+                                                        <th>&#9997;</th>
+                                                        <th>&#128080;</th>
+                                                        <th>&#128588;</th>
+                                                        <th>&#128591;</th>
+                                                        <th>&#129309;</th>
+                                                        <th>&#128133;</th>
+                                                    </tr>
+                                                    <tr class="line_34">
+                                                        <th>&#128066;</th>
+                                                        <th>&#128067;</th>
+                                                        <th>&#128099;</th>
+                                                        <th>&#128064;</th>
+                                                        <th>&#128149;</th>
+                                                        <th>&#128069;</th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="emoji_box_section emoji_box_section_2" style="display:none;">
+                                                <table>
+                                                    <tr class="line_35">
+                                                        <th>&#128068;</th>
+                                                        <th>&#128139;</th>
+                                                        <th>&#128152;</th>
+                                                        <th>&#128147;</th>
+                                                        <th>&#128148;</th>
+                                                        <th>&#128150;</th>
+                                                    </tr>
+                                                    <tr class="line_36">
+                                                        <th>&#128151;</th>
+                                                        <th>&#128153;</th>
+                                                        <th>&#128154;</th>
+                                                        <th>&#128155;</th>
+                                                        <th>&#128156;</th>
+                                                        <th>&#128420;</th>
+                                                    </tr>
+                                                    <tr class="line_37">
+                                                        <th>&#128157;</th>
+                                                        <th>&#128158;</th>
+                                                        <th>&#128140;</th>
+                                                        <th>&#128164;</th>
+                                                        <th>&#128162;</th>
+                                                        <th>&#128163;</th>
+                                                    </tr>
+                                                    <tr class="line_38">
+                                                        <th>&#128165;</th>
+                                                        <th>&#128166;</th>
+                                                        <th>&#128168;</th>
+                                                        <th>&#128172;</th>
+                                                        <th>&#128173;</th>
+                                                        <th>&#128083;</th>
+                                                    </tr>
+                                                    <tr class="line_39">
+                                                        <th>&#128084;</th>
+                                                        <th>&#128085;</th>
+                                                        <th>&#128086;</th>
+                                                        <th>&#128087;</th>
+                                                        <th>&#128088;</th>
+                                                        <th>&#128089;</th>
+                                                    </tr>
+                                                    <tr class="line_40">
+                                                        <th>&#128090;</th>
+                                                        <th>&#128092;</th>
+                                                        <th>&#127890;</th>
+                                                        <th>&#128094;</th>
+                                                        <th>&#128095;</th>
+                                                        <th>&#128096;</th>
+                                                    </tr>
+                                                    <tr class="line_41">
+                                                        <th>&#128098;</th>
+                                                        <th>&#128081;</th>
+                                                        <th>&#128082;</th>
+                                                        <th>&#127913;</th>
+                                                        <th>&#127891;</th>
+                                                        <th>&#128255;</th>
+                                                    </tr>
+                                                    <tr class="line_42">
+                                                        <th>&#128132;</th>
+                                                        <th>&#128141;</th>
+                                                        <th>&#128142;</th>
+                                                        <th>&#128053;</th>
+                                                        <th>&#128018;</th>
+                                                        <th>&#129421;</th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="emoji_box_section emoji_box_section_3" style="display:none;">
+                                                <table>
+                                                    <tr class="line_43">
+                                                        <th>&#128054;</th>
+                                                        <th>&#128021;</th>
+                                                        <th>&#128058;</th>
+                                                        <th>&#129418;</th>
+                                                        <th>&#128008;</th>
+                                                        <th>&#129409;</th>
+                                                    </tr>
+                                                    <tr class="line_44">
+                                                        <th>&#128047;</th>
+                                                        <th>&#128006;</th>
+                                                        <th>&#128052;</th>
+                                                        <th>&#129420;</th>
+                                                        <th>&#129412;</th>
+                                                        <th>&#128046;</th>
+                                                    </tr>
+                                                    <tr class="line_45">
+                                                        <th>&#128004;</th>
+                                                        <th>&#128055;</th>
+                                                        <th>&#128061;</th>
+                                                        <th>&#128015;</th>
+                                                        <th>&#128016;</th>
+                                                        <th>&#128042;</th>
+                                                    </tr>
+                                                    <tr class="line_46">
+                                                        <th>&#128024;</th>
+                                                        <th>&#129423;</th>
+                                                        <th>&#128045;</th>
+                                                        <th>&#128001;</th>
+                                                        <th>&#128057;</th>
+                                                        <th>&#128048;</th>
+                                                    </tr>
+                                                    <tr class="line_47">
+                                                        <th>&#128007;</th>
+                                                        <th>&#129415;</th>
+                                                        <th>&#128040;</th>
+                                                        <th>&#128062;</th>
+                                                        <th>&#128020;</th>
+                                                        <th>&#128019;</th>
+                                                    </tr>
+                                                    <tr class="line_48">
+                                                        <th>&#128036;</th>
+                                                        <th>&#128037;</th>
+                                                        <th>&#128038;</th>
+                                                        <th>&#128039;</th>
+                                                        <th>&#129413;</th>
+                                                        <th>&#129417;</th>
+                                                    </tr>
+                                                    <tr class="line_49">
+                                                        <th>&#128056;</th>
+                                                        <th>&#128010;</th>
+                                                        <th>&#128034;</th>
+                                                        <th>&#128013;</th>
+                                                        <th>&#128050;</th>
+                                                        <th>&#128009;</th>
+                                                    </tr>
+                                                    <tr class="line_50">
+                                                        <th>&#128051;</th>
+                                                        <th>&#128044;</th>
+                                                        <th>&#128032;</th>
+                                                        <th>&#128033;</th>
+                                                        <th>&#129416;</th>
+                                                        <th>&#128025;</th>
+                                                    </tr>
+                                                    <tr class="line_51">
+                                                        <th>&#129408;</th>
+                                                        <th>&#129424;</th>
+                                                        <th>&#129419;</th>
+                                                        <th>&#128012;</th>
+                                                        <th>&#128027;</th>
+                                                        <th>&#128028;</th>
+                                                    </tr>
+                                                    <tr class="line_52">
+                                                        <th>&#128029;</th>
+                                                        <th>&#128030;</th>
+                                                        <th>&#129410;</th>
+                                                        <th>&#128144;</th>
+                                                        <th>&#127800;</th>
+                                                        <th>&#128174;</th>
+                                                    </tr>
+                                                    <tr class="line_53">
+                                                        <th>&#127801;</th>
+                                                        <th>&#129344;</th>
+                                                        <th>&#127803;</th>
+                                                        <th>&#127804;</th>
+                                                        <th>&#127799;</th>
+                                                        <th>&#127793;</th>
+                                                    </tr>
+                                                    <tr class="line_54">
+                                                        <th>&#127794;</th>
+                                                        <th>&#127795;</th>
+                                                        <th>&#127796;</th>
+                                                        <th>&#127797;</th>
+                                                        <th>&#127806;</th>
+                                                        <th>&#127808;</th>
+                                                    </tr>
+                                                    <tr class="line_55">
+                                                        <th>&#127809;</th>
+                                                        <th>&#127810;</th>
+                                                        <th>&#127811;</th>
+                                                        <th>&#127815;</th>
+                                                        <th>&#127817;</th>
+                                                        <th>&#127819;</th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="emoji_box_section emoji_box_section_4" style="display:none;">
+                                                <table>
+                                                    <tr class="line_56">
+                                                        <th>&#127820;</th>
+                                                        <th>&#127821;</th>
+                                                        <th>&#127822;</th>
+                                                        <th>&#127823;</th>
+                                                        <th>&#127825;</th>
+                                                        <th>&#127826;</th>
+                                                    </tr>
+                                                    <tr class="line_57">
+                                                        <th>&#127827;</th>
+                                                        <th>&#127813;</th>
+                                                        <th>&#129361;</th>
+                                                        <th>&#127814;</th>
+                                                        <th>&#129365;</th>
+                                                        <th>&#127805;</th>
+                                                    </tr>
+                                                    <tr class="line_58">
+                                                        <th>&#129362;</th>
+                                                        <th>&#127812;</th>
+                                                        <th>&#127792;</th>
+                                                        <th>&#127838;</th>
+                                                        <th>&#129374;</th>
+                                                        <th>&#129472;</th>
+                                                    </tr>
+                                                    <tr class="line_59">
+                                                        <th>&#127830;</th>
+                                                        <th>&#127831;</th>
+                                                        <th>&#127828;</th>
+                                                        <th>&#127829;</th>
+                                                        <th>&#127790;</th>
+                                                        <th>&#127791;</th>
+                                                    </tr>
+                                                    <tr class="line_60">
+                                                        <th>&#129370;</th>
+                                                        <th>&#127859;</th>
+                                                        <th>&#129368;</th>
+                                                        <th>&#129367;</th>
+                                                        <th>&#127857;</th>
+                                                        <th>&#127833;</th>
+                                                    </tr>
+                                                    <tr class="line_61">
+                                                        <th>&#127835;</th>
+                                                        <th>&#127836;</th>
+                                                        <th>&#127840;</th>
+                                                        <th>&#127843;</th>
+                                                        <th>&#127844;</th>
+                                                        <th>&#127846;</th>
+                                                    </tr>
+                                                    <tr class="line_62">
+                                                        <th>&#127847;</th>
+                                                        <th>&#127849;</th>
+                                                        <th>&#127874;</th>
+                                                        <th>&#127856;</th>
+                                                        <th>&#127851;</th>
+                                                        <th>&#127852;</th>
+                                                    </tr>
+                                                    <tr class="line_63">
+                                                        <th>&#127853;</th>
+                                                        <th>&#127854;</th>
+                                                        <th>&#129371;</th>
+                                                        <th>&#127862;</th>
+                                                        <th>&#127863;</th>
+                                                        <th>&#127864;</th>
+                                                    </tr>                                          
+                                                    <tr class="line_64">
+                                                        <th>&#127865;</th>
+                                                        <th>&#127866;</th>
+                                                        <th>&#127867;</th>
+                                                        <th>&#129346;</th>
+                                                        <th>&#129347;</th>
+                                                        <th>&#127860;</th>
+                                                    </tr>
+                                                    <tr class="line_65">
+                                                        <th>&#129348;</th>
+                                                        <th>&#128298;</th>
+                                                        <th>&#127757;</th>
+                                                        <th>&#127758;</th>
+                                                        <th>&#127759;</th>
+                                                        <th>&#127760;</th>
+                                                    </tr>
+                                                    <tr class="line_66">
+                                                        <th>&#127994;</th>
+                                                        <th>&#128510;</th>
+                                                        <th>&#127755;</th>
+                                                        <th>&#128507;</th>
+                                                        <th>&#127968;</th>
+                                                        <th>&#127745;</th>
+                                                    </tr>
+                                                    <tr class="line_67">
+                                                        <th>&#127980;</th>
+                                                        <th>&#127969;</th>
+                                                        <th>&#127970;</th>
+                                                        <th>&#127971;</th>
+                                                        <th>&#127973;</th>
+                                                        <th>&#127977;</th>
+                                                    </tr>
+                                                    <tr class="line_68">
+                                                        <th>&#127978;</th>
+                                                        <th>&#127979;</th>
+                                                        <th>&#127981;</th>
+                                                        <th>&#127983;</th>
+                                                        <th>&#127984;</th>
+                                                        <th>&#128146;</th>
+                                                    </tr>
+                                                    <tr class="line_69">
+                                                        <th>&#128508;</th>
+                                                        <th>&#128509;</th>
+                                                        <th>&#9962;</th>
+                                                        <th>&#128332;</th>
+                                                        <th>&#128333;</th>
+                                                        <th>&#128331;</th>
+                                                    </tr>
+                                                    <tr class="line_70">
+                                                        <th>&#9970;</th>
+                                                        <th>&#9978;</th>
+                                                        <th>&#127747;</th>
+                                                        <th>&#127748;</th>
+                                                        <th>&#127749;</th>
+                                                        <th>&#127753;</th>
+                                                    </tr>
+                                                    <tr class="line_71">
+                                                        <th>&#127756;</th>
+                                                        <th>&#127904;</th>
+                                                        <th>&#127905;</th>
+                                                        <th>&#127906;</th>
+                                                        <th>&#128136;</th>
+                                                        <th>&#127914;</th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="emoji_box_section emoji_box_section_5" style="display:none;">
+                                                <table>
+                                                    <tr class="line_72">
+                                                        <th>&#128644;</th>
+                                                        <th>&#128645;</th>
+                                                        <th>&#128646;</th>
+                                                        <th>&#128647;</th>
+                                                        <th>&#128648;</th>
+                                                        <th>&#128649;</th>
+                                                    </tr>
+                                                    <tr class="line_73">
+                                                        <th>&#128650;</th>
+                                                        <th>&#128670;</th>
+                                                        <th>&#128651;</th>
+                                                        <th>&#128652;</th>
+                                                        <th>&#128653;</th>
+                                                        <th>&#128657;</th>
+                                                    </tr>                                           
+                                                    <tr class="line_74">
+                                                        <th>&#128658;</th>
+                                                        <th>&#128659;</th>
+                                                        <th>&#128661;</th>
+                                                        <th>&#128662;</th>
+                                                        <th>&#128663;</th>
+                                                        <th>&#128665;</th>
+                                                    </tr>
+                                                    <tr class="line_75">
+                                                        <th>&#128666;</th>
+                                                        <th>&#128668;</th>
+                                                        <th>&#128690;</th>
+                                                        <th>&#128756;</th>
+                                                        <th>&#128757;</th>
+                                                        <th>&#128655;</th>
+                                                    </tr>
+                                                    <tr class="line_76">
+                                                        <th>&#9981;</th>
+                                                        <th>&#128680;</th>
+                                                        <th>&#128677;</th>
+                                                        <th>&#128678;</th>
+                                                        <th>&#128679;</th>
+                                                        <th>&#128721;</th>
+                                                    </tr>
+                                                    <tr class="line_77">
+                                                        <th>&#9875;</th>
+                                                        <th>&#9973;</th>
+                                                        <th>&#128758;</th>
+                                                        <th>&#128676;</th>
+                                                        <th style="color:black;">&#9972;</th>
+                                                        <th>&#128674;</th>
+                                                    </tr>
+                                                    <tr class="line_78">
+                                                        <th>&#128747;</th>
+                                                        <th>&#128186;</th>
+                                                        <th>&#128641;</th>
+                                                        <th>&#128672;</th>
+                                                        <th>&#128673;</th>
+                                                        <th>&#128640;</th>
+                                                    </tr>
+                                                    <tr class="line_79">
+                                                        <th>&#128682;</th>
+                                                        <th>&#128716;</th>
+                                                        <th>&#128701;</th>
+                                                        <th>&#128703;</th>
+                                                        <th>&#128704;</th>
+                                                        <th>&#128705;</th>
+                                                    </tr>
+                                                    <tr class="line_80">
+                                                        <th>&#8987;</th>
+                                                        <th>&#9203;</th>
+                                                        <th>&#8986;</th>
+                                                        <th>&#9200;</th>
+                                                        <th>&#9201;</th>
+                                                        <th>&#9202;</th>
+                                                    </tr>
+                                                    <tr class="line_81">
+                                                        <th>&#128347;</th>
+                                                        <th>&#128359;</th>
+                                                        <th>&#128348;</th>
+                                                        <th>&#128354;</th>
+                                                        <th>&#128344;</th>
+                                                        <th>&#128357;</th>
+                                                    </tr>
+                                                    <tr class="line_82">
+                                                        <th>&#127761;</th>
+                                                        <th>&#127762;</th>
+                                                        <th>&#127763;</th>
+                                                        <th>&#127764;</th>
+                                                        <th>&#127863;</th>
+                                                        <th>&#127765;</th>
+                                                    </tr>
+                                                    <tr class="line_83">
+                                                        <th>&#127769;</th>
+                                                        <th>&#127770;</th>
+                                                        <th>&#127771;</th>
+                                                        <th>&#127772;</th>
+                                                        <th>&#127773;</th>
+                                                        <th>&#127774;</th>
+                                                    </tr>
+                                                    <tr class="line_84">
+                                                        <th>&#11088;</th>
+                                                        <th>&#127752;</th>
+                                                        <th>&#127776;</th>
+                                                        <th>&#127744;</th>
+                                                        <th>&#9925;</th>
+                                                        <th>&#127746;</th>
+                                                    </tr>
+                                                    <!-- <tr>
+                                                        <th>&#127783;</th>
+                                                        <th>&#127786;</th>
+                                                        <th>&#127744;</th>
+                                                        <th>&#127752;</th>
+                                                        <th>&#127746;</th>
+                                                        <th>&#9748;</th>
+                                                    </tr> -->
+                                                    <tr class="line_85">
+                                                        <th>&#9889;</th>
+                                                        <th>&#9924;</th>
+                                                        <th>&#128293;</th>
+                                                        <th>&#128167;</th>
+                                                        <th>&#127754;</th>
+                                                        <th>&#127875;</th>
+                                                    </tr>
+                                                    <tr class="line_86">
+                                                        <th>&#127876;</th>
+                                                        <th>&#127878;</th>
+                                                        <th>&#10024;</th>
+                                                        <th>&#127880;</th>
+                                                        <th>&#127881;</th>
+                                                        <th>&#127886;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#127872;</th>
+                                                        <th>&#127873;</th>
+                                                        <th>&#127915;</th>
+                                                        <th>&#127942;</th>
+                                                        <th>&#127941;</th>
+                                                        <th>&#129351;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#129352;</th>
+                                                        <th>&#129353;</th>
+                                                        <th>&#9917;</th>
+                                                        <th>&#9918;</th>
+                                                        <th>&#127936;</th>
+                                                        <th>&#127952;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#127944;</th>
+                                                        <th>&#127945;</th>
+                                                        <th>&#127921;</th>
+                                                        <th>&#127923;</th>
+                                                        <th>&#127951;</th>
+                                                        <th>&#127953;</th>
+                                                    </tr>                                          
+                                                    <tr>
+                                                        <th>&#127955;</th>
+                                                        <th>&#127992;</th>
+                                                        <th>&#129354;</th>
+                                                        <th>&#129355;</th>
+                                                        <th>&#129349;</th>
+                                                        <th>&#127919;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#9971;</th>
+                                                        <th>&#127933;</th>
+                                                        <th>&#129338;</th>
+                                                        <th>&#127943;</th>
+                                                        <th>&#127938;</th>
+                                                        <th>&#127948;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#127940;</th>
+                                                        <th>&#128675;</th>
+                                                        <th>&#127946;</th>
+                                                        <th>&#9977;</th>
+                                                        <th>&#127947;</th>
+                                                        <th>&#128692;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#128693;</th>
+                                                        <th>&#129336;</th>
+                                                        <th>&#129340;</th>
+                                                        <th>&#129341;</th>
+                                                        <th>&#129342;</th>
+                                                        <th>&#129337;</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>&#127918;</th>
+                                                        <th>&#127922;</th>
+                                                        <th style="color:black;">&#9824;</th>
+                                                        <th style="color:black;">&#9829;</th>
+                                                        <th style="color:black;">&#9830;</th>
+                                                        <th style="color:black;">&#9827;</th>
+                                                    </tr>
+                                                    <tr class="line_87">
+                                                        <th>&#127183;</th>
+                                                        <th>&#127924;</th>
+                                                        <th>&#128263;</th>
+                                                        <th>&#128264;</th>
+                                                        <th>&#128266;</th>
+                                                        <th>&#128226;</th>
+                                                    </tr>
+                                                    <tr class="line_88">
+                                                        <th>&#128227;</th>
+                                                        <th>&#128239;</th>
+                                                        <th>&#128276;</th>
+                                                        <th>&#127932;</th>
+                                                        <th>&#127925;</th>
+                                                        <th>&#127926;</th>
+                                                    </tr>
+                                                    <tr class="line_89">
+                                                        <th>&#127908;</th>
+                                                        <th>&#127911;</th>
+                                                        <th>&#128251;</th>
+                                                        <th>&#127927;</th>
+                                                        <th>&#127928;</th>
+                                                        <th>&#127929;</th>
+                                                    </tr>
+                                                    <tr class="line_90">
+                                                        <th>&#127930;</th>
+                                                        <th>&#127931;</th>
+                                                        <th>&#128241;</th>
+                                                        <th style="color:black;">&#9742;</th>
+                                                        <th>&#128223;</th>
+                                                        <th>&#128268;</th>
+                                                    </tr>
+                                                    <tr class="line_91">
+                                                        <th>&#128190;</th>
+                                                        <th>&#128191;</th>
+                                                        <th>&#128192;</th>
+                                                        <th>&#127909;</th>
+                                                        <th>&#127916;</th>
+                                                        <th>&#128250;</th>
+                                                    </tr>
+                                                    <tr class="line_92">
+                                                        <th>&#128269;</th>
+                                                        <th>&#128270;</th>
+                                                        <th>&#128301;</th>
+                                                        <th>&#128225;</th>
+                                                        <th>&#128161;</th>
+                                                        <th>&#128294;</th>
+                                                    </tr>
+                                                    <tr class="line_93">
+                                                        <th>&#128212;</th>
+                                                        <th>&#128213;</th>
+                                                        <th>&#128214;</th>
+                                                        <th>&#128215;</th>
+                                                        <th>&#128216;</th>
+                                                        <th>&#128211;</th>
+                                                    </tr>
+                                                    <tr class="line_94">
+                                                        <th>&#128195;</th>
+                                                        <th>&#128220;</th>
+                                                        <th>&#128240;</th>
+                                                        <th>&#128209;</th>
+                                                        <th>&#128176;</th>
+                                                        <th>&#128184;</th>
+                                                    </tr>
+                                                    <tr class="line_95">
+                                                        <th>&#128178;</th>
+                                                        <th style="color:black;">&#9993;</th>
+                                                        <th>&#128232;</th>
+                                                        <th>&#128230;</th>
+                                                        <th>&#128235;</th>
+                                                        <th>&#128238;</th>
+                                                    </tr>
+                                                    <tr class="line_96">
+                                                        <th>&#128221;</th>
+                                                        <th>&#128188;</th>
+                                                        <th>&#128194;</th>
+                                                        <th>&#128197;</th>
+                                                        <th>&#128200;</th>
+                                                        <th>&#128201;</th>
+                                                    </tr>
+                                                    <tr class="line_97">
+                                                        <th>&#128202;</th>
+                                                        <th>&#128203;</th>
+                                                        <th>&#128204;</th>
+                                                        <th>&#128206;</th>
+                                                        <th>&#128207;</th>
+                                                        <th>&#128208;</th>
+                                                    </tr>
+                                                    <tr class="line_98">
+                                                        <th style="color:black;">&#9986;</th>
+                                                        <th>&#128274;</th>
+                                                        <th>&#128273;</th>
+                                                        <th>&#128296;</th>
+                                                        <th>&#128299;</th>
+                                                        <th>&#127993;</th>
+                                                    </tr>
+                                                    <tr class="line_99">
+                                                        <th>&#128295;</th>
+                                                        <th>&#128297;</th>
+                                                        <th style="color:black;">&#9878;</th>
+                                                        <th>&#128279;</th>
+                                                        <th>&#128137;</th>
+                                                        <th>&#128138;</th>
+                                                    </tr>
+                                                    <tr class="line_100">
+                                                        <th>&#128684;</th>
+                                                        <th>&#128302;</th>
+                                                        <th>&#128722;</th>
+                                                        <th>&#128699;</th>
+                                                        <th>&#128700;</th>
+                                                        <th>&#128702;</th>
+                                                    </tr>
+                                                    <tr class="line_101">
+                                                        <th>&#128696;</th>
+                                                        <th>&#128691;</th>
+                                                        <th>&#128685;</th>
+                                                        <th>&#128245;</th>
+                                                        <th style="color:black;">&#9851;</th>
+                                                        <th>&#128219;</th>
+                                                    </tr>
+                                                    <tr class="line_102">
+                                                        <th>&#128305;</th>
+                                                        <th>&#9989;</th>
+                                                        <th>&#10062;</th>
+                                                        <th>&#10060;</th>
+                                                        <th>&#10133;</th>
+                                                        <th>&#10134;</th>
+                                                    </tr>
+                                                    <tr class="line_103">
+                                                        <th>&#10135;</th>
+                                                        <th>&#10067;</th>
+                                                        <th>&#10071;</th>
+                                                        <th>&#128175;</th>
+                                                        <th>&#127541;</th>
+                                                        <th>&#127884;</th>
+                                                    </tr> 
+                                                </table>
+                                            </div>
+    
+                                            <table style="display:none;">
+                                                <tr class="line_1">
+                                                    <th>&#128512;</th>
+                                                    <th>&#128513;</th>
+                                                    <th>&#128514;</th>
+                                                    <th>&#129315;</th>
+                                                    <th>&#128515;</th>
+                                                    <th>&#128516;</th>
+                                                </tr>
+                                                <tr class="line_2">
+                                                    <th>&#128517;</th>
+                                                    <th>&#128518;</th>
+                                                    <th>&#128521;</th>
+                                                    <th>&#128522;</th>
+                                                    <th>&#128523;</th>
+                                                    <th>&#128526;</th>
+                                                </tr>
+                                                <tr class="line_3">
+                                                    <th>&#128525;</th>
+                                                    <th>&#128536;</th>
+                                                    <th>&#128535;</th>
+                                                    <th>&#128537;</th>
+                                                    <th>&#128538;</th>
+                                                    <th>&#128578;</th>
+                                                </tr>
+                                                <tr class="line_4">
+                                                    <th>&#129303;</th>
+                                                    <th>&#129300;</th>
+                                                    <th>&#128528;</th>
+                                                    <th>&#128529;</th>
+                                                    <th>&#128566;</th>
+                                                    <th>&#128580;</th>
+                                                </tr>
+                                                <tr class="line_5">
+                                                    <th>&#128527;</th>
+                                                    <th>&#128547;</th>
+                                                    <th>&#128549;</th>
+                                                    <th>&#128558;</th>
+                                                    <th>&#129296;</th>
+                                                    <th>&#128559;</th>
+                                                </tr>
+                                                <tr class="line_6">
+                                                    <th>&#128554;</th>
+                                                    <th>&#128555;</th>
+                                                    <th>&#128564;</th>
+                                                    <th>&#128524;</th>
+                                                    <th>&#129299;</th>
+                                                    <th>&#128539;</th>
+                                                </tr>
+                                                <tr class="line_7">
+                                                    <th>&#128540;</th>
+                                                    <th>&#128541;</th>
+                                                    <th>&#129316;</th>
+                                                    <th>&#128530;</th>
+                                                    <th>&#128531;</th>
+                                                    <th>&#128532;</th>
+                                                </tr>
+                                                <tr class="line_8">
+                                                    <th>&#128533;</th>
+                                                    <th>&#128579;</th>
+                                                    <th>&#129297;</th>
+                                                    <th>&#128562;</th>
+                                                    <th>&#128577;</th>
+                                                    <th>&#128534;</th>
+                                                </tr>
+                                                <tr class="line_9">
+                                                    <th>&#128542;</th>
+                                                    <th>&#128543;</th>
+                                                    <th>&#128548;</th>
+                                                    <th>&#128546;</th>
+                                                    <th>&#128557;</th>
+                                                    <th>&#128550;</th>
+                                                </tr>
+                                                <tr class="line_10">
+                                                    <th>&#128551;</th>
+                                                    <th>&#128552;</th>
+                                                    <th>&#128553;</th>
+                                                    <th>&#128556;</th>
+                                                    <th>&#128560;</th>
+                                                    <th>&#128561;</th>
+                                                </tr>
+                                                <tr class="line_11">
+                                                    <th>&#128563;</th>
+                                                    <th>&#128565;</th>
+                                                    <th>&#128545;</th>
+                                                    <th>&#128544;</th>
+                                                    <th>&#128519;</th>
+                                                    <th>&#129312;</th>
+                                                </tr>
+                                                <tr class="line_12">
+                                                    <th>&#129313;</th>
+                                                    <th>&#129317;</th>
+                                                    <th>&#128567;</th>
+                                                    <th>&#129298;</th>
+                                                    <th>&#129301;</th>
+                                                    <th>&#129314;</th>
+                                                </tr>
+                                                <tr class="line_13">
+                                                    <th>&#129319;</th>
+                                                    <th>&#128520;</th>
+                                                    <th>&#128127;</th>
+                                                    <th>&#128121;</th>
+                                                    <th>&#128122;</th>
+                                                    <th>&#128128;</th>
+                                                </tr>
+                                                <tr class="line_14">
+                                                    <th>&#128123;</th>
+                                                    <th>&#128125;</th>
+                                                    <th>&#128126;</th>
+                                                    <th>&#129302;</th>
+                                                    <th>&#128169;</th>
+                                                    <th>&#128570;</th>
+                                                </tr>
+                                                <tr class="line_15">
+                                                    <th>&#128568;</th>
+                                                    <th>&#128569;</th>
+                                                    <th>&#128571;</th>
+                                                    <th>&#128572;</th>
+                                                    <th>&#128573;</th>
+                                                    <th>&#128576;</th>
+                                                </tr>
+                                                <tr class="line_16">
+                                                    <th>&#128575;</th>
+                                                    <th>&#128574;</th>
+                                                    <th>&#128584;</th>
+                                                    <th>&#128585;</th>
+                                                    <th>&#128586;</th>
+                                                    <th>&#128102;</th>
+                                                </tr>
+                                                <tr class="line_17">
+                                                    <th>&#128102;</th>
+                                                    <th>&#128102;</th>
+                                                    <th>&#128102;</th>
+                                                    <th>&#128103;</th>
+                                                    <th>&#128103;</th>
+                                                    <th>&#128103;</th>
+                                                </tr>
+                                                <tr class="line_18">
+                                                    <th>&#128103;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128105;</th>
+                                                </tr>
+                                                <tr class="line_19">
+                                                    <th>&#128105;</th>
+                                                    <th>&#128105;</th>
+                                                    <th>&#128105;</th>
+                                                    <th>&#128116;</th>
+                                                    <th>&#128116;</th>
+                                                    <th>&#128116;</th>
+                                                </tr>
+                                                <tr class="line_20">
+                                                    <th>&#128117;</th>
+                                                    <th>&#128117;</th>
+                                                    <th>&#128117;</th>
+                                                    <th>&#128118;</th>
+                                                    <th>&#128118;</th>
+                                                    <th>&#128118;</th>
+                                                </tr>
+                                                <tr class="line_21">
+                                                    <th>&#128124;</th>
+                                                    <th>&#128124;</th>
+                                                    <th>&#128124;</th>
+                                                    <th>&#128110;</th>
+                                                    <th>&#128373;</th>
+                                                    <th>&#128130;</th>
+                                                </tr>
+                                                <tr class="line_22">
+                                                    <th>&#128119;</th>
+                                                    <th>&#128115;</th>
+                                                    <th>&#128113;</th>
+                                                    <th>&#127877;</th>
+                                                    <th>&#129334;</th>
+                                                    <th>&#128120;</th>
+                                                </tr>
+                                                <tr class="line_23">
+                                                    <th>&#129332;</th>
+                                                    <th>&#128112;</th>
+                                                    <th>&#129333;</th>
+                                                    <th>&#129328;</th>
+                                                    <th>&#128114;</th>
+                                                    <th>&#128589;</th>
+                                                </tr>
+                                                <tr class="line_24">
+                                                    <th>&#128590;</th>
+                                                    <th>&#128581;</th>
+                                                    <th>&#128582;</th>
+                                                    <th>&#128129;</th>
+                                                    <th>&#128587;</th>
+                                                    <th>&#128583;</th>
+                                                </tr>
+                                                <tr class="line_25">
+                                                    <th>&#129318;</th>
+                                                    <th>&#129335;</th>
+                                                    <th>&#128134;</th>
+                                                    <th>&#128135;</th>
+                                                    <th>&#128694;</th>
+                                                    <th>&#127939;</th>
+                                                </tr>
+                                                <tr class="line_26">
+                                                    <th>&#128131;</th>
+                                                    <th>&#128378;</th>
+                                                    <th>&#128111;</th>
+                                                    <th>&#128372;</th>
+                                                    <th>&#128100;</th>
+                                                    <th>&#128101;</th>
+                                                </tr>
+                                                <tr class="line_27">
+                                                    <th>&#128108;</th>
+                                                    <th>&#128143;</th>
+                                                    <th>&#128105;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128104;</th>
+                                                    <th>&#128104;</th>
+                                                </tr>
+                                                <tr class="line_28">
+                                                    <th>&#128105;</th>
+                                                    <th>&#128170;</th>
+                                                    <th>&#128170;</th>
+                                                    <th>&#128170;</th>
+                                                    <th>&#129331;</th>
+                                                    <th>&#128072;</th>
+                                                </tr>
+                                                <tr class="line_29">
+                                                    <th>&#128072;</th>
+                                                    <th>&#128072;</th>
+                                                    <th>&#128073;</th>
+                                                    <th>&#128073;</th>
+                                                    <th>&#128073;</th>
+                                                    <th>&#9757;</th>
+                                                </tr>
+                                                <tr class="line_30">
+                                                    <th>&#9757;</th>
+                                                    <th>&#9757;</th>
+                                                    <th>&#9996;</th>
+                                                    <th>&#129310;</th>
+                                                    <th>&#128406;</th>
+                                                    <th>&#129304;</th>
+                                                </tr>
+                                                <tr class="line_31">
+                                                    <th>&#129305;</th>
+                                                    <th>&#9995;</th>
+                                                    <th>&#128076;</th>
+                                                    <th>&#128077;</th>
+                                                    <th>&#128078;</th>
+                                                    <th>&#9994;</th>
+                                                </tr>
+                                                <tr class="line_32">
+                                                    <th>&#128074;</th>
+                                                    <th>&#129307;</th>
+                                                    <th>&#129308;</th>
+                                                    <th>&#129306;</th>
+                                                    <th>&#128075;</th>
+                                                    <th>&#128079;</th>
+                                                </tr>
+                                                <tr class="line_33">
+                                                    <th>&#9997;</th>
+                                                    <th>&#128080;</th>
+                                                    <th>&#128588;</th>
+                                                    <th>&#128591;</th>
+                                                    <th>&#129309;</th>
+                                                    <th>&#128133;</th>
+                                                </tr>
+                                                <tr class="line_34">
+                                                    <th>&#128066;</th>
+                                                    <th>&#128067;</th>
+                                                    <th>&#128099;</th>
+                                                    <th>&#128064;</th>
+                                                    <th>&#128149;</th>
+                                                    <th>&#128069;</th>
+                                                </tr>
+                                                <tr class="line_35">
+                                                    <th>&#128068;</th>
+                                                    <th>&#128139;</th>
+                                                    <th>&#128152;</th>
+                                                    <th>&#128147;</th>
+                                                    <th>&#128148;</th>
+                                                    <th>&#128150;</th>
+                                                </tr>
+                                                <tr class="line_36">
+                                                    <th>&#128151;</th>
+                                                    <th>&#128153;</th>
+                                                    <th>&#128154;</th>
+                                                    <th>&#128155;</th>
+                                                    <th>&#128156;</th>
+                                                    <th>&#128420;</th>
+                                                </tr>
+                                                <tr class="line_37">
+                                                    <th>&#128157;</th>
+                                                    <th>&#128158;</th>
+                                                    <th>&#128140;</th>
+                                                    <th>&#128164;</th>
+                                                    <th>&#128162;</th>
+                                                    <th>&#128163;</th>
+                                                </tr>
+                                                <tr class="line_38">
+                                                    <th>&#128165;</th>
+                                                    <th>&#128166;</th>
+                                                    <th>&#128168;</th>
+                                                    <th>&#128172;</th>
+                                                    <th>&#128173;</th>
+                                                    <th>&#128083;</th>
+                                                </tr>
+                                                <tr class="line_39">
+                                                    <th>&#128084;</th>
+                                                    <th>&#128085;</th>
+                                                    <th>&#128086;</th>
+                                                    <th>&#128087;</th>
+                                                    <th>&#128088;</th>
+                                                    <th>&#128089;</th>
+                                                </tr>
+                                                <tr class="line_40">
+                                                    <th>&#128090;</th>
+                                                    <th>&#128092;</th>
+                                                    <th>&#127890;</th>
+                                                    <th>&#128094;</th>
+                                                    <th>&#128095;</th>
+                                                    <th>&#128096;</th>
+                                                </tr>
+                                                <tr class="line_41">
+                                                    <th>&#128098;</th>
+                                                    <th>&#128081;</th>
+                                                    <th>&#128082;</th>
+                                                    <th>&#127913;</th>
+                                                    <th>&#127891;</th>
+                                                    <th>&#128255;</th>
+                                                </tr>
+                                                <tr class="line_42">
+                                                    <th>&#128132;</th>
+                                                    <th>&#128141;</th>
+                                                    <th>&#128142;</th>
+                                                    <th>&#128053;</th>
+                                                    <th>&#128018;</th>
+                                                    <th>&#129421;</th>
+                                                </tr>
+                                                <tr class="line_43">
+                                                    <th>&#128054;</th>
+                                                    <th>&#128021;</th>
+                                                    <th>&#128058;</th>
+                                                    <th>&#129418;</th>
+                                                    <th>&#128008;</th>
+                                                    <th>&#129409;</th>
+                                                </tr>
+                                                <tr class="line_44">
+                                                    <th>&#128047;</th>
+                                                    <th>&#128006;</th>
+                                                    <th>&#128052;</th>
+                                                    <th>&#129420;</th>
+                                                    <th>&#129412;</th>
+                                                    <th>&#128046;</th>
+                                                </tr>
+                                                <tr class="line_45">
+                                                    <th>&#128004;</th>
+                                                    <th>&#128055;</th>
+                                                    <th>&#128061;</th>
+                                                    <th>&#128015;</th>
+                                                    <th>&#128016;</th>
+                                                    <th>&#128042;</th>
+                                                </tr>
+                                                <tr class="line_46">
+                                                    <th>&#128024;</th>
+                                                    <th>&#129423;</th>
+                                                    <th>&#128045;</th>
+                                                    <th>&#128001;</th>
+                                                    <th>&#128057;</th>
+                                                    <th>&#128048;</th>
+                                                </tr>
+                                                <tr class="line_47">
+                                                    <th>&#128007;</th>
+                                                    <th>&#129415;</th>
+                                                    <th>&#128040;</th>
+                                                    <th>&#128062;</th>
+                                                    <th>&#128020;</th>
+                                                    <th>&#128019;</th>
+                                                </tr>
+                                                <tr class="line_48">
+                                                    <th>&#128036;</th>
+                                                    <th>&#128037;</th>
+                                                    <th>&#128038;</th>
+                                                    <th>&#128039;</th>
+                                                    <th>&#129413;</th>
+                                                    <th>&#129417;</th>
+                                                </tr>
+                                                <tr class="line_49">
+                                                    <th>&#128056;</th>
+                                                    <th>&#128010;</th>
+                                                    <th>&#128034;</th>
+                                                    <th>&#128013;</th>
+                                                    <th>&#128050;</th>
+                                                    <th>&#128009;</th>
+                                                </tr>
+                                                <tr class="line_50">
+                                                    <th>&#128051;</th>
+                                                    <th>&#128044;</th>
+                                                    <th>&#128032;</th>
+                                                    <th>&#128033;</th>
+                                                    <th>&#129416;</th>
+                                                    <th>&#128025;</th>
+                                                </tr>
+                                                <tr class="line_51">
+                                                    <th>&#129408;</th>
+                                                    <th>&#129424;</th>
+                                                    <th>&#129419;</th>
+                                                    <th>&#128012;</th>
+                                                    <th>&#128027;</th>
+                                                    <th>&#128028;</th>
+                                                </tr>
+                                                <tr class="line_52">
+                                                    <th>&#128029;</th>
+                                                    <th>&#128030;</th>
+                                                    <th>&#129410;</th>
+                                                    <th>&#128144;</th>
+                                                    <th>&#127800;</th>
+                                                    <th>&#128174;</th>
+                                                </tr>
+                                                <tr class="line_53">
+                                                    <th>&#127801;</th>
+                                                    <th>&#129344;</th>
+                                                    <th>&#127803;</th>
+                                                    <th>&#127804;</th>
+                                                    <th>&#127799;</th>
+                                                    <th>&#127793;</th>
+                                                </tr>
+                                                <tr class="line_54">
+                                                    <th>&#127794;</th>
+                                                    <th>&#127795;</th>
+                                                    <th>&#127796;</th>
+                                                    <th>&#127797;</th>
+                                                    <th>&#127806;</th>
+                                                    <th>&#127808;</th>
+                                                </tr>
+                                                <tr class="line_55">
+                                                    <th>&#127809;</th>
+                                                    <th>&#127810;</th>
+                                                    <th>&#127811;</th>
+                                                    <th>&#127815;</th>
+                                                    <th>&#127817;</th>
+                                                    <th>&#127819;</th>
+                                                </tr>
+                                                <tr class="line_56">
+                                                    <th>&#127820;</th>
+                                                    <th>&#127821;</th>
+                                                    <th>&#127822;</th>
+                                                    <th>&#127823;</th>
+                                                    <th>&#127825;</th>
+                                                    <th>&#127826;</th>
+                                                </tr>
+                                                <tr class="line_57">
+                                                    <th>&#127827;</th>
+                                                    <th>&#127813;</th>
+                                                    <th>&#129361;</th>
+                                                    <th>&#127814;</th>
+                                                    <th>&#129365;</th>
+                                                    <th>&#127805;</th>
+                                                </tr>
+                                                <tr class="line_58">
+                                                    <th>&#129362;</th>
+                                                    <th>&#127812;</th>
+                                                    <th>&#127792;</th>
+                                                    <th>&#127838;</th>
+                                                    <th>&#129374;</th>
+                                                    <th>&#129472;</th>
+                                                </tr>
+                                                <tr class="line_59">
+                                                    <th>&#127830;</th>
+                                                    <th>&#127831;</th>
+                                                    <th>&#127828;</th>
+                                                    <th>&#127829;</th>
+                                                    <th>&#127790;</th>
+                                                    <th>&#127791;</th>
+                                                </tr>
+                                                <tr class="line_60">
+                                                    <th>&#129370;</th>
+                                                    <th>&#127859;</th>
+                                                    <th>&#129368;</th>
+                                                    <th>&#129367;</th>
+                                                    <th>&#127857;</th>
+                                                    <th>&#127833;</th>
+                                                </tr>
+                                                <tr class="line_61">
+                                                    <th>&#127835;</th>
+                                                    <th>&#127836;</th>
+                                                    <th>&#127840;</th>
+                                                    <th>&#127843;</th>
+                                                    <th>&#127844;</th>
+                                                    <th>&#127846;</th>
+                                                </tr>
+                                                <tr class="line_62">
+                                                    <th>&#127847;</th>
+                                                    <th>&#127849;</th>
+                                                    <th>&#127874;</th>
+                                                    <th>&#127856;</th>
+                                                    <th>&#127851;</th>
+                                                    <th>&#127852;</th>
+                                                </tr>
+                                                <tr class="line_63">
+                                                    <th>&#127853;</th>
+                                                    <th>&#127854;</th>
+                                                    <th>&#129371;</th>
+                                                    <th>&#127862;</th>
+                                                    <th>&#127863;</th>
+                                                    <th>&#127864;</th>
+                                                </tr>                                          
+                                                <tr class="line_64">
+                                                    <th>&#127865;</th>
+                                                    <th>&#127866;</th>
+                                                    <th>&#127867;</th>
+                                                    <th>&#129346;</th>
+                                                    <th>&#129347;</th>
+                                                    <th>&#127860;</th>
+                                                </tr>
+                                                <tr class="line_65">
+                                                    <th>&#129348;</th>
+                                                    <th>&#128298;</th>
+                                                    <th>&#127757;</th>
+                                                    <th>&#127758;</th>
+                                                    <th>&#127759;</th>
+                                                    <th>&#127760;</th>
+                                                </tr>
+                                                <tr class="line_66">
+                                                    <th>&#127994;</th>
+                                                    <th>&#128510;</th>
+                                                    <th>&#127755;</th>
+                                                    <th>&#128507;</th>
+                                                    <th>&#127968;</th>
+                                                    <th>&#127745;</th>
+                                                </tr>
+                                                <tr class="line_67">
+                                                    <th>&#127980;</th>
+                                                    <th>&#127969;</th>
+                                                    <th>&#127970;</th>
+                                                    <th>&#127971;</th>
+                                                    <th>&#127973;</th>
+                                                    <th>&#127977;</th>
+                                                </tr>
+                                                <tr class="line_68">
+                                                    <th>&#127978;</th>
+                                                    <th>&#127979;</th>
+                                                    <th>&#127981;</th>
+                                                    <th>&#127983;</th>
+                                                    <th>&#127984;</th>
+                                                    <th>&#128146;</th>
+                                                </tr>
+                                                <tr class="line_69">
+                                                    <th>&#128508;</th>
+                                                    <th>&#128509;</th>
+                                                    <th>&#9962;</th>
+                                                    <th>&#128332;</th>
+                                                    <th>&#128333;</th>
+                                                    <th>&#128331;</th>
+                                                </tr>
+                                                <tr class="line_70">
+                                                    <th>&#9970;</th>
+                                                    <th>&#9978;</th>
+                                                    <th>&#127747;</th>
+                                                    <th>&#127748;</th>
+                                                    <th>&#127749;</th>
+                                                    <th>&#127753;</th>
+                                                </tr>
+                                                <tr class="line_71">
+                                                    <th>&#127756;</th>
+                                                    <th>&#127904;</th>
+                                                    <th>&#127905;</th>
+                                                    <th>&#127906;</th>
+                                                    <th>&#128136;</th>
+                                                    <th>&#127914;</th>
+                                                </tr>
+                                                <!-- <tr>
+                                                    <th>&#127917;</th>
+                                                    <th>&#128444;</th>
+                                                    <th>&#127912;</th>
+                                                    <th>&#127920;</th>
+                                                    <th>&#128642;</th>
+                                                    <th>&#128643;</th>
+                                                </tr> -->
+                                                <tr class="line_72">
+                                                    <th>&#128644;</th>
+                                                    <th>&#128645;</th>
+                                                    <th>&#128646;</th>
+                                                    <th>&#128647;</th>
+                                                    <th>&#128648;</th>
+                                                    <th>&#128649;</th>
+                                                </tr>
+                                                <tr class="line_73">
+                                                    <th>&#128650;</th>
+                                                    <th>&#128670;</th>
+                                                    <th>&#128651;</th>
+                                                    <th>&#128652;</th>
+                                                    <th>&#128653;</th>
+                                                    <th>&#128657;</th>
+                                                </tr>                                           
+                                                <tr class="line_74">
+                                                    <th>&#128658;</th>
+                                                    <th>&#128659;</th>
+                                                    <th>&#128661;</th>
+                                                    <th>&#128662;</th>
+                                                    <th>&#128663;</th>
+                                                    <th>&#128665;</th>
+                                                </tr>
+                                                <tr class="line_75">
+                                                    <th>&#128666;</th>
+                                                    <th>&#128668;</th>
+                                                    <th>&#128690;</th>
+                                                    <th>&#128756;</th>
+                                                    <th>&#128757;</th>
+                                                    <th>&#128655;</th>
+                                                </tr>
+                                                <tr class="line_76">
+                                                    <th>&#9981;</th>
+                                                    <th>&#128680;</th>
+                                                    <th>&#128677;</th>
+                                                    <th>&#128678;</th>
+                                                    <th>&#128679;</th>
+                                                    <th>&#128721;</th>
+                                                </tr>
+                                                <tr class="line_77">
+                                                    <th>&#9875;</th>
+                                                    <th>&#9973;</th>
+                                                    <th>&#128758;</th>
+                                                    <th>&#128676;</th>
+                                                    <th style="color:black;">&#9972;</th>
+                                                    <th>&#128674;</th>
+                                                </tr>
+                                                <tr class="line_78">
+                                                    <th>&#128747;</th>
+                                                    <th>&#128186;</th>
+                                                    <th>&#128641;</th>
+                                                    <th>&#128672;</th>
+                                                    <th>&#128673;</th>
+                                                    <th>&#128640;</th>
+                                                </tr>
+                                                <tr class="line_79">
+                                                    <th>&#128682;</th>
+                                                    <th>&#128716;</th>
+                                                    <th>&#128701;</th>
+                                                    <th>&#128703;</th>
+                                                    <th>&#128704;</th>
+                                                    <th>&#128705;</th>
+                                                </tr>
+                                                <tr class="line_80">
+                                                    <th>&#8987;</th>
+                                                    <th>&#9203;</th>
+                                                    <th>&#8986;</th>
+                                                    <th>&#9200;</th>
+                                                    <th>&#9201;</th>
+                                                    <th>&#9202;</th>
+                                                </tr>
+                                                <tr class="line_81">
+                                                    <th>&#128347;</th>
+                                                    <th>&#128359;</th>
+                                                    <th>&#128348;</th>
+                                                    <th>&#128354;</th>
+                                                    <th>&#128344;</th>
+                                                    <th>&#128357;</th>
+                                                </tr>
+                                                <tr class="line_82">
+                                                    <th>&#127761;</th>
+                                                    <th>&#127762;</th>
+                                                    <th>&#127763;</th>
+                                                    <th>&#127764;</th>
+                                                    <th>&#127863;</th>
+                                                    <th>&#127765;</th>
+                                                </tr>
+                                                <tr class="line_83">
+                                                    <th>&#127769;</th>
+                                                    <th>&#127770;</th>
+                                                    <th>&#127771;</th>
+                                                    <th>&#127772;</th>
+                                                    <th>&#127773;</th>
+                                                    <th>&#127774;</th>
+                                                </tr>
+                                                <tr class="line_84">
+                                                    <th>&#11088;</th>
+                                                    <th>&#127752;</th>
+                                                    <th>&#127776;</th>
+                                                    <th>&#127744;</th>
+                                                    <th>&#9925;</th>
+                                                    <th>&#127746;</th>
+                                                </tr>
+                                                <!-- <tr>
+                                                    <th>&#127783;</th>
+                                                    <th>&#127786;</th>
+                                                    <th>&#127744;</th>
+                                                    <th>&#127752;</th>
+                                                    <th>&#127746;</th>
+                                                    <th>&#9748;</th>
+                                                </tr> -->
+                                                <tr class="line_85">
+                                                    <th>&#9889;</th>
+                                                    <th>&#9924;</th>
+                                                    <th>&#128293;</th>
+                                                    <th>&#128167;</th>
+                                                    <th>&#127754;</th>
+                                                    <th>&#127875;</th>
+                                                </tr>
+                                                <tr class="line_86>
+                                                    <th>&#127876;</th>
+                                                    <th>&#127878;</th>
+                                                    <th>&#10024;</th>
+                                                    <th>&#127880;</th>
+                                                    <th>&#127881;</th>
+                                                    <th>&#127886;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#127872;</th>
+                                                    <th>&#127873;</th>
+                                                    <th>&#127915;</th>
+                                                    <th>&#127942;</th>
+                                                    <th>&#127941;</th>
+                                                    <th>&#129351;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#129352;</th>
+                                                    <th>&#129353;</th>
+                                                    <th>&#9917;</th>
+                                                    <th>&#9918;</th>
+                                                    <th>&#127936;</th>
+                                                    <th>&#127952;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#127944;</th>
+                                                    <th>&#127945;</th>
+                                                    <th>&#127921;</th>
+                                                    <th>&#127923;</th>
+                                                    <th>&#127951;</th>
+                                                    <th>&#127953;</th>
+                                                </tr>                                          
+                                                <tr>
+                                                    <th>&#127955;</th>
+                                                    <th>&#127992;</th>
+                                                    <th>&#129354;</th>
+                                                    <th>&#129355;</th>
+                                                    <th>&#129349;</th>
+                                                    <th>&#127919;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#9971;</th>
+                                                    <th>&#127933;</th>
+                                                    <th>&#129338;</th>
+                                                    <th>&#127943;</th>
+                                                    <th>&#127938;</th>
+                                                    <th>&#127948;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#127940;</th>
+                                                    <th>&#128675;</th>
+                                                    <th>&#127946;</th>
+                                                    <th>&#9977;</th>
+                                                    <th>&#127947;</th>
+                                                    <th>&#128692;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#128693;</th>
+                                                    <th>&#129336;</th>
+                                                    <th>&#129340;</th>
+                                                    <th>&#129341;</th>
+                                                    <th>&#129342;</th>
+                                                    <th>&#129337;</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>&#127918;</th>
+                                                    <th>&#127922;</th>
+                                                    <th style="color:black;">&#9824;</th>
+                                                    <th style="color:black;">&#9829;</th>
+                                                    <th style="color:black;">&#9830;</th>
+                                                    <th style="color:black;">&#9827;</th>
+                                                </tr>
+                                                <tr class="line_87">
+                                                    <th>&#127183;</th>
+                                                    <th>&#127924;</th>
+                                                    <th>&#128263;</th>
+                                                    <th>&#128264;</th>
+                                                    <th>&#128266;</th>
+                                                    <th>&#128226;</th>
+                                                </tr>
+                                                <tr class="line_88">
+                                                    <th>&#128227;</th>
+                                                    <th>&#128239;</th>
+                                                    <th>&#128276;</th>
+                                                    <th>&#127932;</th>
+                                                    <th>&#127925;</th>
+                                                    <th>&#127926;</th>
+                                                </tr>
+                                                <tr class="line_89">
+                                                    <th>&#127908;</th>
+                                                    <th>&#127911;</th>
+                                                    <th>&#128251;</th>
+                                                    <th>&#127927;</th>
+                                                    <th>&#127928;</th>
+                                                    <th>&#127929;</th>
+                                                </tr>
+                                                <tr class="line_90">
+                                                    <th>&#127930;</th>
+                                                    <th>&#127931;</th>
+                                                    <th>&#128241;</th>
+                                                    <th style="color:black;">&#9742;</th>
+                                                    <th>&#128223;</th>
+                                                    <th>&#128268;</th>
+                                                </tr>
+                                                <tr class="line_91">
+                                                    <th>&#128190;</th>
+                                                    <th>&#128191;</th>
+                                                    <th>&#128192;</th>
+                                                    <th>&#127909;</th>
+                                                    <th>&#127916;</th>
+                                                    <th>&#128250;</th>
+                                                </tr>
+                                                <tr class="line_92">
+                                                    <th>&#128269;</th>
+                                                    <th>&#128270;</th>
+                                                    <th>&#128301;</th>
+                                                    <th>&#128225;</th>
+                                                    <th>&#128161;</th>
+                                                    <th>&#128294;</th>
+                                                </tr>
+                                                <tr class="line_93">
+                                                    <th>&#128212;</th>
+                                                    <th>&#128213;</th>
+                                                    <th>&#128214;</th>
+                                                    <th>&#128215;</th>
+                                                    <th>&#128216;</th>
+                                                    <th>&#128211;</th>
+                                                </tr>
+                                                <tr class="line_94">
+                                                    <th>&#128195;</th>
+                                                    <th>&#128220;</th>
+                                                    <th>&#128240;</th>
+                                                    <th>&#128209;</th>
+                                                    <th>&#128176;</th>
+                                                    <th>&#128184;</th>
+                                                </tr>
+                                                <tr class="line_95">
+                                                    <th>&#128178;</th>
+                                                    <th style="color:black;">&#9993;</th>
+                                                    <th>&#128232;</th>
+                                                    <th>&#128230;</th>
+                                                    <th>&#128235;</th>
+                                                    <th>&#128238;</th>
+                                                </tr>
+                                                <tr class="line_96">
+                                                    <th>&#128221;</th>
+                                                    <th>&#128188;</th>
+                                                    <th>&#128194;</th>
+                                                    <th>&#128197;</th>
+                                                    <th>&#128200;</th>
+                                                    <th>&#128201;</th>
+                                                </tr>
+                                                <tr class="line_97">
+                                                    <th>&#128202;</th>
+                                                    <th>&#128203;</th>
+                                                    <th>&#128204;</th>
+                                                    <th>&#128206;</th>
+                                                    <th>&#128207;</th>
+                                                    <th>&#128208;</th>
+                                                </tr>
+                                                <tr class="line_98">
+                                                    <th style="color:black;">&#9986;</th>
+                                                    <th>&#128274;</th>
+                                                    <th>&#128273;</th>
+                                                    <th>&#128296;</th>
+                                                    <th>&#128299;</th>
+                                                    <th>&#127993;</th>
+                                                </tr>
+                                                <tr class="line_99">
+                                                    <th>&#128295;</th>
+                                                    <th>&#128297;</th>
+                                                    <th style="color:black;">&#9878;</th>
+                                                    <th>&#128279;</th>
+                                                    <th>&#128137;</th>
+                                                    <th>&#128138;</th>
+                                                </tr>
+                                                <tr class="line_100">
+                                                    <th>&#128684;</th>
+                                                    <th>&#128302;</th>
+                                                    <th>&#128722;</th>
+                                                    <th>&#128699;</th>
+                                                    <th>&#128700;</th>
+                                                    <th>&#128702;</th>
+                                                </tr>
+                                                <tr class="line_101">
+                                                    <th>&#128696;</th>
+                                                    <th>&#128691;</th>
+                                                    <th>&#128685;</th>
+                                                    <th>&#128245;</th>
+                                                    <th style="color:black;">&#9851;</th>
+                                                    <th>&#128219;</th>
+                                                </tr>
+                                                <tr class="line_102">
+                                                    <th>&#128305;</th>
+                                                    <th>&#9989;</th>
+                                                    <th>&#10062;</th>
+                                                    <th>&#10060;</th>
+                                                    <th>&#10133;</th>
+                                                    <th>&#10134;</th>
+                                                </tr>
+                                                <tr class="line_103">
+                                                    <th>&#10135;</th>
+                                                    <th>&#10067;</th>
+                                                    <th>&#10071;</th>
+                                                    <th>&#128175;</th>
+                                                    <th>&#127541;</th>
+                                                    <th>&#127884;</th>
+                                                </tr>                                         
+                                            </table>
+                                            
+                                        </div>
+                                        <div class="emoji_tabs">
+                                            <div class="emoji_tab emoji_tab_1">&#128512;</div>
+                                            <div class="emoji_tab emoji_tab_2">&#128068;</div>
+                                            <div class="emoji_tab emoji_tab_3">&#128054;</div>
+                                            <div class="emoji_tab emoji_tab_4">&#127820;</div>
+                                            <div class="emoji_tab emoji_tab_5">&#128644;</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <div class="secondary_button save_message">Add</div>
+                            <form id="loadImageForm" action="" enctype="multipart/form-data" type="post">
+                                <input type="file" id="loadImageInput" style="display:none"/>
+                            </form>
+                            <div class="secondary_button load_image">Image</div>
                         </div>
-                        <form id="loadImageForm" action="" enctype="multipart/form-data" type="post">
-                            <input type="file" id="loadImageInput" style="display:none"/>
-                        </form>
-                        <div class="secondary_button load_image">Image</div>
-                        <div class="secondary_button save_message">Add</div>
                     </div>
                 </div>
+                
+            </div>
+        </section>
+
+        <section id="friends" class="content" style="display:none;">
+            <div class="tag_name_box" style="margin-bottom:20px;"></div>
+            <div class="friend_list_wrapper">
             </div>
         </section>
 
@@ -597,6 +1945,7 @@
 
     <script src="jquery.js"></script>
     <script src="jquery-ui.js"></script>
+    <script src="autoResize.js"></script>
     <script src="window.js"></script>
 
 </body>

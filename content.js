@@ -23,7 +23,8 @@ var fb_list_selectors = 'ul[aria-label="' + conversionListText + '" i] li:not([f
 
 
 //const backendUrl = 'http://localhost:4400';
-const backendUrl = 'http://13.232.210.23:4400';
+//const backendUrl = 'http://13.232.210.23:4400';
+const backendUrl = 'https://ahmerraza.com';
 
 let userAuthToken;
 let sideBox = true;
@@ -62,6 +63,8 @@ chrome.storage.local.get(['userAuthToken', 'sideBox', 'friendList', 'tags', 'tem
 
 
         console.log(friendList);
+        console.log(templates);
+        console.log(messages);
     }
 });
 
@@ -114,7 +117,7 @@ chrome.runtime.onMessage.addListener(
             break;
             case 'sendMessage':
                 console.log('sendMessage');
-                sendMessage(message.message);
+                sendMessageFromPopup(message.message);
             break;
             case 'newTemplate':
                 console.log('newTemplate');
@@ -261,22 +264,34 @@ function changeTagColor(tag, color) {
 }
 
 function newImage(template, filename) {
+    let messageHtml = '';
+
+    console.log('The grand new image');
     let key = generateKey(template);
+    if (messages[key] == null)  {
+        messages[key] = [];
+        messageHtml += `<div class="template_name" style="display:none;">${template}</div>`
+    }
     messages[key].push(filename);
 
     if (section == 'message' && $('.template_name').text().trim() == template) {
-        $('.messages').append(`
-            <div class="message">
+        console.log(filename);
+        messageHtml += `
+            <li class="message ui-sortable-handle">
                 <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">
-                    <img src="${'http://localhost:4400/temp/' + filename}" 
-                        style="width:calc(100% + 6px);margin-top:2px;">
+                    <img class="message_image" src="${backendUrl + '/temp/' + filename}" 
+                        style="width:calc(100% + 6px);margin-top:2px;" crossorigin="anonymous">
                 </div>
                 <div class="message_action"  
                     style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
                     <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
                 </div>
-            </div>`
-        );
+            </li>`;
+
+        //setTimeout(() => {
+        let mes = $('.messages .messageSortable');
+        mes.html(mes.html() + messageHtml);
+        //}, 400);
     }
 }
 
@@ -332,16 +347,23 @@ function newTemplate(template) {
         messageHtml += `<div class="template_name" style="display:none;">${template}</div>`;
         if (messages[key] == null) messages[key] = [];
         for (let i = 0; i < messages[key].length; i++) {
-            messageHtml += `
-            <div class="message">
-                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
-                    ${messages[key][i]}
-                </div>
-                <div class="message_action" 
-                style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
-                </div>
-            </div>`;
+            let main = '';
+            if (messages[key][i].indexOf('--template--') < 0)
+                main = messages[key][i];
+            else 
+                main = `<img class="message_image" src="${backendUrl + '/temp/' + messages[key][i]}" 
+                    style="width:calc(100% + 6px);margin-top:2px;" crossorigin="anonymous">`;
+
+            messageHtml = messageHtml + `
+                <li class="message">
+                    <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">` + 
+                        main + 
+                    `</div>
+                    <div class="message_action" 
+                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                        <i class="fa fa-paper-plane send_message" style="font-style:16px;cursor:pointer;"></i>
+                    </div>
+                </li>`;
         }
 
 
@@ -378,6 +400,13 @@ function generateStyleCss(css) {
 }
 
 function deleteTemplate(template) {
+    if (section == 'message') {
+        if ($('.messages .template_name').text().trim() == template) {
+            $('.back_to_template').mclick();
+            $('.back_to_template').trigger('click');
+        }
+    }
+
     for (let i = 0; i < templates.length; i++) {
         if (templates[i] == template) {
             templates.splice(i, 1);
@@ -394,8 +423,31 @@ function deleteTemplate(template) {
     });
 }
 
+function newMessage(template, message) {
+    console.log('new messageeeee');
+    let key = generateKey(template);
+    if (messages[key] == null) messages[key] = [];
+    messages[key].push(message);
+
+    if (section == 'message' && $('.template_name').text().trim() == template) {
+        $('.messages messageSortable').append(`
+            <li class="message" style="margin-top:12px;">
+                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
+                    ${message}
+                </div>
+                <div class="message_action"  
+                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
+                </div>
+            </li>`
+        );
+    }
+}
+
 function deleteMessage(template, message) {
     let key = generateKey(template);
+    console.log(messages);
+    console.log(message);
     for (let i = 0; i < messages[key].length; i++) {
         if (messages[key][i] == message) {
             messages[key].splice(i, 1);
@@ -404,14 +456,30 @@ function deleteMessage(template, message) {
     }
 
     if (section == 'message' && $('.template_name').text().trim() == template) {
-        $children = $('.messages').children();
-        $children.each(function() {
-            if ($(this).find('.message_value').text().trim() == message ||
-                $(this).find('.message_value').find('img').length > 0) {
-                $(this).remove();
-                return false;
-            }
-        });
+        console.log('Inn');
+        if (message.indexOf('--template--') >= 0) {
+            let $children = $('.messages .message_image');
+            $children.each(function() {
+                let src = $(this).attr('src');
+                let filename = src.substring(src.lastIndexOf('/') + 1);
+                console.log(filename);
+                if (filename.trim() == message.trim()) {
+                    console.log('equal');
+                    $(this).closest('.message').remove();
+                    return false;
+                }
+            });
+        } else {
+            console.log('normal');
+            let $children = $('.messages .message');
+            console.log($children);
+            $children.each(function() {
+                if ($(this).find('.message_value').html().trim() == message) {
+                    $(this).remove();
+                    return false;
+                }
+            });
+        }
     }
 }
 
@@ -427,6 +495,9 @@ function start() {
 
     $chatBox.arrive('li._5l-3', function() {
         let item = $(this).find('._1qt5:not("._6zkd")');
+        if ($(this).find('._1ht6._7st9').text().trim() == '') {
+            location.reload();
+        }
         if (item.find('.tag_select').length == 0) {
             addSelectToFriend(item);
         }
@@ -442,7 +513,7 @@ function start() {
         setFriendListClickListener();
     }
 
-    console.log($('#select-ahmer.raza.520'));
+    //imageSendSetup();
 }
 
 function setFriendListClickListener() {
@@ -523,7 +594,7 @@ function setSideMessageBox() {
 
         .template {
             margin-bottom: 12px;
-            background: rgb(173,216,230,.7);
+            background: rgba(0, 141, 211, .5);
             border-radius: 4px;
             margin-right: 10px;
         }
@@ -532,7 +603,7 @@ function setSideMessageBox() {
         }
         .message {
             display: flex;
-            background: rgb(173,216,230,.7);
+            background: rgba(0, 141, 211, .5);
             border-radius: 4px;
             margin-bottom:12px;
             justify-content: space-between;
@@ -570,6 +641,9 @@ function setSideMessageBox() {
                 style="margin-bottom:16px;display:flex;justify-content:space-between;margin-right:6px;"></div>
             <div class="templates"></div>
             <div class="messages"></div>
+        </div>
+        <div class="temp_image_box">
+            
         </div>
     </div>`;
 
@@ -652,6 +726,7 @@ function setSideMessageBox() {
     });
 
     $('.template_value').on('click', function(e) {
+        console.log('OLd template clicked!!1!@3123');
         e.stopPropagation();
         e.stopImmediatePropagation();
 
@@ -683,15 +758,15 @@ function setSideMessageBox() {
                     style="width:calc(100% + 6px);margin-top:2px;" crossorigin="anonymous">`;
 
             messageHtml = messageHtml + `
-            <li class="message">
-                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">` + 
-                    main + 
-                `</div>
-                <div class="message_action" 
-                style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <i class="fa fa-paper-plane send_message" style="font-style:16px;cursor:pointer;"></i>
-                </div>
-            </li>`;
+                <li class="message">
+                    <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:250px;">` + 
+                        main + 
+                    `</div>
+                    <div class="message_action" 
+                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
+                        <i class="fa fa-paper-plane send_message" style="font-style:16px;cursor:pointer;"></i>
+                    </div>
+                </li>`;
         }
 
 
@@ -741,16 +816,19 @@ function setSideMessageBox() {
         $('.templates').css('display', 'none');
         $('.messages').css('display', 'block');
 
-        $('.send_message').on('click', function(e) {
+        $('.messages').on('click', '.send_message', function(e) {
+            console.log('Send message clicked!!');
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            let message = $(this).parent().prev().text().trim();
-            if (message == null || message == '') {
+            let message = $(this).closest('.message').find('.message_value').html().trim();
+            if ($(this).closest('.message').find('img').length > 0) {
                 message = $(this).parent().prev().find('img').attr('src');
                 imageToBeSend = $(this).parent().prev().find('img').get(0);
+                console.log(imageToBeSend);
             }
 
+            console.log(message);
             sendMessage(message);
         });
 
@@ -821,27 +899,6 @@ function templateValueClickListener(e) {
     });
 }
 
-function newMessage(template, message) {
-    console.log('new messageeeee');
-    let key = generateKey(template);
-    if (messages[key] == null) messages[key] = [];
-    messages[key].push(message);
-
-    if (section == 'message' && $('.template_name').text().trim() == template) {
-        $('.messages').append(`
-            <li class="message" style="margin-top:12px;">
-                <div class="message_value" style="font-size:15px;padding:5px 8px 5px 8px;width:240px;">
-                    ${message}
-                </div>
-                <div class="message_action"  
-                    style="margin-top:5px;width:20px;height:20px;margin-right:6px;display:justify-content:center;flex;align-items:center;">
-                    <i class="fa fa-paper-plane send_message" style="font-size:16px;cursor:pointer;"></i>
-                </div>
-            </li>`
-        );
-    }
-}
-
 function generateKey(str) {
     return str.replace(/ /g, '-');
 }
@@ -850,7 +907,10 @@ function generateKey(str) {
 let optionStyle = `color:white;padding:4px;`;
 function addSelectToFriend(item) {
     
-    let friendName = item.find('span').text();
+    let friendName = item.find('span').text().trim();
+    if (item.find('span span').length == 1)
+        friendName = item.find('span span').text().trim();
+    //console.log(friendName);
 
     $a = item.closest('a._2il3');
     let id = $a.attr('data-href').split('/t/')[1];//.replace(/./g, '0');
@@ -864,7 +924,7 @@ function addSelectToFriend(item) {
         options = '';
         if (friendList[i].name == friendName) {
             let tag = friendList[i].tag;
-
+            //console.log(tag);
             for (let j = 0; j < tags.length; j++) {
                 if (tags[j].name == tag) {
                     o.color = tags[j].color;
@@ -897,6 +957,7 @@ function appendSelectAndAddListener(item, options, o) {
     if (sideBox) selectStyle += 'display:block;';
     else selectStyle += 'display:none;';
 
+    //console.log(item);
     item.html(item.html() + //o.id.replace(/\./g, 'a')
         `<select id="select-${o.id.replace(/\./g, 'abc123')}" class="tag_select" style="${selectStyle}${s}">
             <option>...</option>
@@ -1034,18 +1095,21 @@ function selectFriend(friendName, friendId) {
     //     }
     // });
 
+    $chatList = $chatBox.find('li._5l-3 ._1qt5:not("._6zkd")');
 
     let flag = false;
     $chatList.each(function() {
         if ($(this).find('span').text() == friendName) {
             $(this).trigger('click');
             $(this).mclick();
-	        flag = true;
+            flag = true;
+            console.log('Instant');
             return false;
         }
     });
 
     if (flag == false) {
+        console.log('reload');
 	    window.location.replace("https://facebook.com/messages/t/" + friendId.replace(/abc123/g, '.'));
     }
 }
@@ -1055,6 +1119,55 @@ async function loadBlob(fileName) {
     return await fetched.blob();
 }
   
+async function sendMessageFromPopup(message) {
+    //console.log('From message of popup', message);
+    if (message.indexOf('--template--')) {
+        console.log('this is an image');
+        // if ($('.temp_image_box').length == 0) {
+        //     console.log('New');
+        //     $('.side_message_section').append(`
+        //         <div class="temp_image_box">
+        //             <img class="temp_image" src="${message}" style="width:25px;display:none" crossorigin="anonymous">
+        //         </div>
+        //     `);
+        // } else {
+        //     console.log('Not new');
+        //     $('.temp_image_box').html(`
+        //         <img class="temp_image" src="${message}" style="width:250px;display:none" crossorigin="anonymous">
+        //     `);
+        // }
+
+        $('.temp_image_box').html(`
+            <img class="temp_image" src="${message}" style="width:250px;display:none" crossorigin="anonymous">
+        `);
+        imageToBeSend = $('.temp_image').get(0);
+        //console.log(imageToBeSend);
+    }
+
+    sendMessage(message);
+}
+
+function imageSendSetup() {
+    console.log('Image send setup');
+    console.log($('.temp_image'));
+    imageToBeSend = $('.temp_image').get(0);
+    console.log(imageToBeSend);
+    let c = document.createElement('canvas');
+    //let img = document.querySelector(".message_image");
+    let imgWidth = imageToBeSend.naturalWidth;
+    let imgHeight = imageToBeSend.naturalHeight;
+    console.log(imgWidth, imgHeight);
+    c.width = imgWidth;
+    c.height = imgHeight;
+    let ctx = c.getContext("2d");
+    ctx.drawImage(imageToBeSend, 0, 0, imgWidth, imgHeight);
+    setTimeout(() => {
+        let bb = c.toBlob(async (blob) => {
+            //console.log(blob);
+            let clipboardItemInput = new ClipboardItem({'image/png': blob});
+        }, 'image/png', 1);
+    }, 200);
+}
 
 async function sendMessage(templateMessage) {
     // const url = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Chrome_Material_Icon-450x450.png';
@@ -1075,22 +1188,27 @@ async function sendMessage(templateMessage) {
         $('.__i_').mclick();
         $('#js_1').mclick();
 
-        console.log(templateMessage);
+        //console.log(templateMessage);
         if (templateMessage.indexOf('--template--') >= 0) {
+            console.log(imageToBeSend);
             let c = document.createElement('canvas');
             //let img = document.querySelector(".message_image");
             let imgWidth = imageToBeSend.naturalWidth;
             let imgHeight = imageToBeSend.naturalHeight;
+            console.log(imgWidth, imgHeight);
             c.width = imgWidth;
             c.height = imgHeight;
             let ctx = c.getContext("2d");
             ctx.drawImage(imageToBeSend, 0, 0, imgWidth, imgHeight);
-            let bb = c.toBlob(async (blob) => {
-                console.log(blob);
-                let clipboardItemInput = new ClipboardItem({'image/png': blob});
-                await navigator.clipboard.write([clipboardItemInput]);
-                document.execCommand('paste');
-            }, 'image/png', 0.95);
+            setTimeout(() => {
+                let bb = c.toBlob(async (blob) => {
+                    //console.log(blob);
+                    let clipboardItemInput = new ClipboardItem({'image/png': blob});
+                    await navigator.clipboard.write([clipboardItemInput]);
+                    document.execCommand('paste');
+                }, 'image/png', 1);
+            }, 200);
+            
 
             //let url = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_Chrome_Material_Icon-450x450.png';
             // let url = templateMessage;
@@ -1103,6 +1221,9 @@ async function sendMessage(templateMessage) {
             // await navigator.clipboard.write([clipboardItemInput]);
             // document.execCommand('paste');
         } else {
+            console.log('templateMessage', templateMessage);
+            templateMessage = templateMessage.replace(/<br>/g, '\n');
+
             var evt = new Event('input', { bubbles: true });
             let input = document.querySelector(selector);
             input.innerHTML = templateMessage;
