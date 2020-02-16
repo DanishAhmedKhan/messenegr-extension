@@ -1,6 +1,6 @@
 console.log('Hello from popup!');
 
-//const backendUrl = 'http://localhost:4400';
+//const backendUrl = 'http://localhost:3000';
 //const backendUrl = 'http://13.232.210.23:4400';
 //const backendUrl = 'http://ec2-13-232-210-23.ap-south-1.compute.amazonaws.com:4400';
 const backendUrl = 'https://ahmerraza.com';
@@ -698,51 +698,6 @@ function jq( myid ) {
     return "#" + myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
 }
 
-
-$('.tag_friend_box').on('click', '.friend_remove', function(e) {
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    let friendId = $(this).parent().prev().find('.friend_select').attr('id').split('-')[1];
-    console.log(friendId);
-
-    $(this).parent().parent().parent().remove();
-
-    console.log()
-    let tag = $('.friend_list_heading .current_tag_selected').text().trim();
-    console.log(tag);
-    //let iid = jq('tag-' + tag.replace(/ /g, '-'));
-    let iid = '#' + $.escapeSelector('tag-' + tag.replace(/ /g, '-'));
-    console.log(iid);
-    let tagCount = $(iid).find('.tag_friend_count');
-    console.log(tagCount, tagCount.text());
-    tagCount.text(parseInt(tagCount.text()) - 1);
-
-    console.log(friendList);
-
-    for (let i = 0; i < friendList.length; i++) {
-        if (friendList[i].id == friendId) {
-            friendList.splice(i, 1);
-            break;
-        }
-    }
-
-    console.log(friendList);
-
-    chrome.storage.local.set({ friendList });
-
-    chrome.tabs.getAllInWindow(null, function(tabs) {
-        for (let i = 0; i < tabs.length; i++) {
-            if (tabs[i].title == 'Messenger') { // Find messenger tab
-                chrome.tabs.sendMessage(tabs[i].id, { action: 'changeSelect', id: friendId, tag: '...' });
-                break;
-            }
-        }
-    });
-
-
-});
-
 $('#add_tag_form').submit(function(e) {
     e.preventDefault();
     $tagBox = $('.tag_box');
@@ -828,7 +783,7 @@ $('#add_tag_form').submit(function(e) {
     } else {
         // Cheack if tag is alredy present
         for (let i = 0; i < tags.length; i++) {
-            if (tags[i] == tag) {
+            if (tags[i].name == tag) {
                 $('.overlay_view').css({
                     'width': '300px',
                     'height': 'auto',
@@ -1191,10 +1146,10 @@ $('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
     }
 
     let friends = $('.tag_friends .tag_friend_item .friend_select');
-    console.log(friends);
+    //console.log(friends);
     friends.each(function() {
         let t = $(this).val();
-        console.log(t);
+        //console.log(t);
         if (t == tag) {
             $(this).closest('.tag_friend_item').remove();
         }
@@ -1209,8 +1164,8 @@ $('.overlay_action').on('click', '.action_tag_delete_yes', function(e) {
     }
 
     cleanFeiendList();
-    console.log(friendList);
-    console.log(tags);
+    //console.log(friendList);
+    //console.log(tags);
     // Save the tag to local stoarge
     chrome.storage.local.set({ tags });
 
@@ -1348,6 +1303,51 @@ $('.tag_friend_box').on('click', '.friend_note', function(e) {
         'pointer-events': 'note',
         'background': primaryColorHover
     });
+});
+
+
+$('.tag_friend_box').on('click', '.friend_remove', function(e) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    let friendId = $(this).parent().prev().find('.friend_select').attr('id').split('-')[1];
+    console.log(friendId);
+
+    $(this).parent().parent().parent().remove();
+
+    console.log()
+    let tag = $('.friend_list_heading .current_tag_selected').text().trim();
+    console.log(tag);
+    //let iid = jq('tag-' + tag.replace(/ /g, '-'));
+    let iid = '#' + $.escapeSelector('tag-' + tag.replace(/ /g, '-'));
+    console.log(iid);
+    let tagCount = $(iid).find('.tag_friend_count');
+    console.log(tagCount, tagCount.text());
+    tagCount.text(parseInt(tagCount.text()) - 1);
+
+    console.log(friendList);
+
+    for (let i = 0; i < friendList.length; i++) {
+        if (friendList[i].id == friendId) {
+            friendList.splice(i, 1);
+            break;
+        }
+    }
+
+    console.log(friendList);
+
+    chrome.storage.local.set({ friendList });
+
+    chrome.tabs.getAllInWindow(null, function(tabs) {
+        for (let i = 0; i < tabs.length; i++) {
+            if (tabs[i].title == 'Messenger') { // Find messenger tab
+                chrome.tabs.sendMessage(tabs[i].id, { action: 'changeSelect', id: friendId, tag: '...' });
+                break;
+            }
+        }
+    });
+
+
 });
 
 $('.note_box').on('click', '.add_note', function(e) {

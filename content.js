@@ -22,7 +22,7 @@ var fb_ul_li_selector = "ul[aria-label='" + conversionListText + "' i] li";
 var fb_list_selectors = 'ul[aria-label="' + conversionListText + '" i] li:not([fb_user_id]';
 
 
-//const backendUrl = 'http://localhost:4400';
+//const backendUrl = 'http://localhost:3000';
 //const backendUrl = 'http://13.232.210.23:4400';
 const backendUrl = 'https://ahmerraza.com';
 
@@ -1023,15 +1023,23 @@ function appendSelectAndAddListener(item, options, o) {
         console.log(friendList);
         chrome.storage.local.set({ friendList });
 
-        // Send data to background for saving to the server
-        chrome.runtime.sendMessage({ 
-            type: 'addTagToFriend', 
-            friendId, 
-            friendName, 
-            tag, 
-            friendImageUrl,
-            userAuthToken,
-        }); 
+        if (tag == '...') {
+            chrome.runtime.sendMessage({
+                type: 'removeFriend',
+                userAuthToken,
+                friendName,
+            })
+        } else {
+            // Send data to background for saving to the server
+            chrome.runtime.sendMessage({ 
+                type: 'addTagToFriend', 
+                friendId, 
+                friendName, 
+                tag, 
+                friendImageUrl,
+                userAuthToken,
+            }); 
+        }
     });
 }
 
@@ -1059,7 +1067,11 @@ function removeTag(tag) {
                 'color': 'black'
             });
             spliceIndex.push(i);
-            chrome.runtime.sendMessage({ type: 'addTagToFriend', friendName: friendList[i].name, tag: '...'}); 
+            chrome.runtime.sendMessage({ 
+                type: 'removeFriend', 
+                userAuthToken, 
+                friendName: friendList[i].name, 
+            }); 
         }
     }
     while(spliceIndex.length) {

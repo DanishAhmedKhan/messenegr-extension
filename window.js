@@ -1,5 +1,5 @@
 // Local development serrver
-//let backendUrl = 'http://localhost:4400';
+//let backendUrl = 'http://localhost:3000';
 // Production AWS EC2 server
 //const backendUrl = 'https://13.232.210.23:4400';
 const backendUrl = 'https://ahmerraza.com';

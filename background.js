@@ -1,6 +1,6 @@
 console.log('Hello from the background!');
 
-//const backendUrl = 'http://localhost:4400';
+//const backendUrl = 'http://localhost:3000';
 //const backendUrl = 'http://13.232.210.23:4400';
 const backendUrl = 'https://ahmerraza.com';
 
@@ -25,6 +25,27 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         $.ajax({
             type: 'POST',
             url: backendUrl + '/api/user/addTagToFriend',
+            data: data,
+            beforeSend: function(request) {
+                request.setRequestHeader("x-user-auth-token", message.userAuthToken);
+            },
+            success: function(data, textStatus, request) {
+                console.log(data);
+            },
+            error: function (request, textStatus, errorThrown) {
+                console.log(request);
+            }
+        });
+    } else if (message.type == 'removeFriend') {
+        console.log('removeFriend');
+
+        let data = {
+            friendName: message.friendName
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: backendUrl + '/api/user/removeFriend',
             data: data,
             beforeSend: function(request) {
                 request.setRequestHeader("x-user-auth-token", message.userAuthToken);
